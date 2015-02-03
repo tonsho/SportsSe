@@ -1,19 +1,67 @@
+var facilities = {
+    "法典公園（グラスポ）": ["830", "1030", "1230", "1430", "1630"],
+    "運動公園": ["700", "900", "1100", "1300", "1500", "1700"]
+}
+
+function fillFacilityTable() {
+    console.log("hoge!");
+    var selectOption = $("<select></select>");
+    for (var facility in facilities) {
+        selectOption.append($("<option></option>").text(facility));
+    }
+    $(".timeSlot").append(selectOption);
+}
+
+function init() {
+    fillFacilityTable();
+}
+
+
 function load() {
-    console.log("読み込み完了");
     var contents = $("iframe").contents();
     var title = $("title", contents).text();
+    console.log("読み込み完了 [" + title + "]");
     if (0 < title.indexOf("認証画面")) {
-        console.log("-> 認証画面");
-        login(contents);
-    } else {
-        clickTest(contents);
+        setTimeout(login, getSleepTime(), contents);
+    } else if (0 < title.indexOf("登録メニュー画面")) {
+        setTimeout(selectReservation, getSleepTime(), contents);
+    } else if (0 < title.indexOf("予約申込画面")) {
+        setTimeout(selectPurpose, getSleepTime(), contents);
+    } else if (0 < title.indexOf("利用目的選択画面")) {
+        setTimeout(selectTennis, getSleepTime(), contents);
+    } else if (0 < title.indexOf("館選択画面")) {
+        setTimeout(selectFacility, getSleepTime(), contents);
     }
+}
+
+function getSleepTime() {
+    return getRandomInt(500, 3000);
+}
+
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 function login(contents) {
     $("#userId", contents).val("123456789");
     $("#password", contents).val("password");
     dispatchClick(contents, $("img[alt='ログイン']", contents).parent());
+}
+
+function selectReservation(contents) {
+    dispatchClick(contents, $("img[alt='予約の申込み']", contents).parent());
+}
+
+function selectPurpose(contents) {
+    dispatchClick(contents, $("img[alt='利用目的から']", contents).parent());
+}
+
+function selectTennis(contents) {
+    dispatchClick(contents, $("a:contains('テニス')", contents));
+}
+
+function selectTennis(contents) {
+    dispatchClick(contents, $("a:contains('テニス')", contents));
 }
 
 function dispatchClick(contents, a) {

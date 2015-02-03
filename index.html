@@ -6,19 +6,40 @@
     <title>TypeScript HTML App</title>
     <link rel="stylesheet" href="app.css" type="text/css" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script src="http://0-oo.googlecode.com/svn/yahho-calendar.js"></script>
+    <script src="http://0-oo.googlecode.com/svn/gcalendar-holidays.js"></script>
+    <script type="text/javascript">
+    YahhoCal.loadYUI();
+    </script>
     <script src="JavaScript1.js"></script>
 </head>
-<body>
+<body onload="init()">
     <h1>TypeScript HTML App</h1>
-
+    <table>
+        <tr>
+            <td>
+                <input type="text" id="inputDate1" name="inputDate" style="width:5.5em;" onclick="YahhoCal.render(this.id);" />
+                <div id="calendar1"></div>
+            </td>
+            <td id="slot1" class="timeSlot">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" id="inputDate2" name="inputDate" style="width:5.5em;" onclick="YahhoCal.render(this.id);" />
+                <div id="calendar2"></div>
+            </td>
+            <td id="slot2" class="timeSlot"></td>
+        </tr>
+    </table>
+<!--
     <iframe id="tgt" onload="load()" src="http://www.city.funabashi.chiba.jp/kurashi/study/0003/p000317.html" height=800 width=1000>
         この部分は iframe 対応のブラウザで見てください。
     </iframe>
+-->
 
-<!--
     <iframe id="tgt" onload="load()" src="https://funayoyaku.city.funabashi.chiba.jp/web" height=800 width=1000>
         この部分は iframe 対応のブラウザで見てください。
     </iframe>
--->
 </body>
 </html>
