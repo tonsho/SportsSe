@@ -19,6 +19,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="app.css" />
+    <Content Include="dateformat.js" />
+    <Content Include="HtmlPage1.html" />
     <Content Include="index.html" />
     <Content Include="JavaScript1.js" />
     <Content Include="web.config" />

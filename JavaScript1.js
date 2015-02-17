@@ -1,10 +1,18 @@
 var facilities = {
     "法典公園（グラスポ）": ["830", "1030", "1230", "1430", "1630"],
     "運動公園": ["700", "900", "1100", "1300", "1500", "1700"]
-}
+};
+
+var reservationList = {
+    "法典公園（グラスポ）": {
+        "2015/2/26": {
+            "1030": "",
+            "1430": ""
+        }
+    }
+};
 
 function fillFacilityTable() {
-    console.log("hoge!");
     var selectOption = $("<select></select>");
     for (var facility in facilities) {
         selectOption.append($("<option></option>").text(facility));
@@ -21,6 +29,7 @@ function load() {
     var contents = $("iframe").contents();
     var title = $("title", contents).text();
     console.log("読み込み完了 [" + title + "]");
+    disableDialog(contents);
     if (0 < title.indexOf("認証画面")) {
         setTimeout(login, getSleepTime(), contents);
     } else if (0 < title.indexOf("登録メニュー画面")) {
@@ -31,7 +40,21 @@ function load() {
         setTimeout(selectTennis, getSleepTime(), contents);
     } else if (0 < title.indexOf("館選択画面")) {
         setTimeout(selectFacility, getSleepTime(), contents);
+    } else if (0 < title.indexOf("施設空き状況１ヶ月表示画面")) {
+        setTimeout(selectDate, getSleepTime(), contents);
     }
+}
+
+function disableDialog(contents) {
+    var doc = contents[0];
+    var disableConfirm = function() {
+        window.confirm = function (message) {
+            console.log("confirm '" + message + "' true");
+            return true;
+        }
+    }
+    console.log(disableConfirm.toString());
+    doc.location.href = "javascript:(" + disableConfirm.toString() + "());";
 }
 
 function getSleepTime() {
@@ -60,53 +83,41 @@ function selectTennis(contents) {
     dispatchClick(contents, $("a:contains('テニス')", contents));
 }
 
-function selectTennis(contents) {
-    dispatchClick(contents, $("a:contains('テニス')", contents));
+function selectFacility(contents) {
+    var facility = getNextFaclity();
+    dispatchClick(contents, $("a:contains('" + facility + "')", contents));
+}
+
+function getNextFaclity() {
+    return "法典公園（グラスポ）";
+}
+
+function selectDate(contents) {
+    var date = new Date(getNextDate());
+    var targetMonth = (date.getDate() + 1);
+    var displayMonth = getDisplayMonth(contents);
+    console.log("target : " + targetMonth + ", displaying : " + displayMonth);
+
+    if (targetMonth < displayMonth) {
+        movePreviousMonth();
+        return;
+    } else if (targetMonth > displayMonth) {
+        moveNextMonth();
+        return;
+    }
+
+    
+}
+
+function getNextDate() {
+    return "2015/2/26";
+}
+
+function moveNextMonth(contents) {
+
 }
 
 function dispatchClick(contents, a) {
     var doc = contents[0];
-    var e = doc.createEvent('MouseEvents');
-    e.initMouseEvent(
-        'click',               // イベント名
-        true,                  // バブリングするか
-        true,                  // デフォルトアクションが取り消し可能か
-        doc.defaultView,       // イベントが発生したビュー
-        1,                     // クリック回数
-        500,                   // スクリーン内のマウスの X 座標
-        500,                   // スクリーン内のマウスの Y 座標
-        200,                   // ブラウザ表示域内のマウスの X 座標
-        200,                   // ブラウザ表示域内のマウスの Y 座標
-        false,                 // Ctrl キーが押されているか
-        false,                 // Alt キーが押されているか
-        false,                 // Shift キーが押されているか
-        false,                 // Meta キーが押されているか
-        0,                     // どのボタンが押されているか（左から順に 0、1、2）
-        doc.body               // 関連するノード（何でも良い）
-    );
-    a[0].dispatchEvent(e);
-}
-
-function clickTest(contents) {
-    var doc = contents[0];
-    var e = doc.createEvent('MouseEvents');
-    e.initMouseEvent(
-        'click',               // イベント名
-        true,                  // バブリングするか
-        true,                  // デフォルトアクションが取り消し可能か
-        doc.defaultView,       // イベントが発生したビュー
-        1,                     // クリック回数
-        500,                   // スクリーン内のマウスの X 座標
-        500,                   // スクリーン内のマウスの Y 座標
-        200,                   // ブラウザ表示域内のマウスの X 座標
-        200,                   // ブラウザ表示域内のマウスの Y 座標
-        false,                 // Ctrl キーが押されているか
-        false,                 // Alt キーが押されているか
-        false,                 // Shift キーが押されているか
-        false,                 // Meta キーが押されているか
-        0,                     // どのボタンが押されているか（左から順に 0、1、2）
-        doc.body               // 関連するノード（何でも良い）
-    );
-    var a = $("a", contents).get(1);
-    a.dispatchEvent(e);
+    doc.location.href = a[0].href;
 }
