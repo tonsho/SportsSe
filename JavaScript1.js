@@ -81,7 +81,7 @@ function load() {
     } else if (0 < title.indexOf("施設空き状況１ヶ月表示画面")) {
         setTimeout(selectDate, getSleepTime(), contents);
     } else if (0 < title.indexOf("施設空き状況画面時間貸し")) {
-        if ($("img[alt='選択中']", contents)) {
+        if ($("img[alt='選択中']", contents).length) {
             setTimeout(doApply, getSleepTime(), contents);
         } else {
             setTimeout(selectTimeSlot, getSleepTime(), contents);
@@ -179,7 +179,7 @@ function selectDate(contents) {
 }
 
 function selectTimeSlot(contents) {
-    $("img[alt='空き']").each(function () {
+    $("img[alt='空き']", contents).each(function () {
         var a = $(this).parent();
         var hrefScriptString = a.attr("href");
         var startTime = Number(hrefScriptString.split(",")[5]);
@@ -187,6 +187,8 @@ function selectTimeSlot(contents) {
         if (startTime <= getTargetTimeSlot() && getTargetTimeSlot() < endTime) {
             dispatchClick(contents, a);
             return false;
+        } else {
+            console.log(getTargetTimeSlot() + " is not in [" + startTime + " - " + endTime + "]");
         }
     });
     console.log("There is no time slot. " + getTargetDate() + " " + getTargetTimeSlot());
@@ -199,21 +201,21 @@ function selectStartTime(contents) {
 }
 
 function doApply(contents) {
-    dispatchClick(contents, $("img[alt='申込み']", contents));
+    dispatchClick(contents, $("img[alt='申込み']", contents).parent());
 }
 
 function confirmTOS(contents) {
     $("input#ruleFg_1", contents).click();
-    dispatchClick(contents, $("img[alt='確認']", contents));
+    dispatchClick(contents, $("img[alt='確認']", contents).parent());
 }
 
 function applyReservation(contents) {
     $("input[name='applyNum']", contents).val(numOfPlayers);
-    dispatchClick(contents, $("img[alt='申込み']", contents));
+    dispatchClick(contents, $("img[alt='申込み']", contents).parent());
 }
 
 function sendMail(contents) {
-    dispatchClick(contents, $("img[alt='送信する']", contents));
+    dispatchClick(contents, $("img[alt='送信する']", contents).parent());
 }
 
 function dispatchClick(contents, a) {
