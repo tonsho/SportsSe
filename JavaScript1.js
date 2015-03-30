@@ -1,19 +1,24 @@
 var facilities = {
+    "----- Select -----": [],
     "法典公園（グラスポ）": ["830", "1030", "1230", "1430", "1630"],
     "運動公園": ["700", "900", "1100", "1300", "1500", "1700"]
 };
 
-var reservationList =
-    [
-    {
-        facility: "法典公園（グラスポ）",
-        date: "2015/2/26",
-        time_slot: [
-                "1030", "1430"]
-    }
-    ];
-
 var numOfPlayers = 3;
+
+var timerId = null;
+var isStarted = false;
+
+var reservationList = [];
+//    [
+//    {
+//        date: "2015/2/26",
+//        facility: "法典公園（グラスポ）",
+//        time: [
+//                "1030", "1430"]
+//    }
+//    ];
+
 
 function getTargetFaclity() {
     return "法典公園（グラスポ）";
@@ -31,36 +36,82 @@ function moveToNextTarget() {
     // TODO
 }
 
-function fillFacilityTable() {
-    var facilitySelectObj = $("<select></select>").change(function () {
-        var oldTimeSlots = $("td", $(this).parent());
-        $(oldTimeSlots).each(function () {
-            $(this).remove();
-        });
-        var selectedFacility;
-        $("option:selected", $(this)).each(function () {
-            selectedFacility = $(this).val();
-            return false;
-        });
-        var timeSlots = facilities[selectedFacility];
-        for (var i = 0; i < timeSlots.length; ++i) {
-            var timeSlotObj = $("<td><input type='checkbox' value='" + timeSlots[i] + "' /> " + timeSlots[i] + "</td>");
-            $("tr", $(this).parent()).append(timeSlotObj);
-        }
-    });
-    var timeSlotTableObj = $("<table><tr></tr></table>");
-    for (var facility in facilities) {
-        var facilityObj = $("<option></option>").text(facility);
-        facilitySelectObj.append(facilityObj);
-    }
-    $(".timeSlot").append(facilitySelectObj);
-    $(".timeSlot").append(timeSlotTableObj);
-}
 
 function init() {
-    fillFacilityTable();
+    $("#addTimeSlot").button().click(function() {
+        $("#reservationList").append(createReservationItem($(".reservationItem").length));
+    }).click();
+    $("#removeTimeSlot").button().click(function () {
+        $(".reservationItem:last").remove();
+        updateReservationList();
+    });
+    $("#start").button().click(function () {
+        if (timerId) {
+            clearTimeout(timerId);
+        }
+        if (isStarted) {
+            $(this).text("Start");
+            $(".editable").prop("disabled", false);
+            $(".selector").selectmenu("enable");
+            $("#addTimeSlot").prop("disabled", false);
+            $("#removeTimeSlot").prop("disabled", false);
+            isStarted = false;
+        } else {
+            updateReservationList();
+            if (getTargetFaclity()) {
+                $(this).text("Stop");
+                $(".editable").prop("disabled", true);
+                $(".selector").selectmenu("disable");
+                $("#addTimeSlot").prop("disabled", true);
+                $("#removeTimeSlot").prop("disabled", true);
+                isStarted = true;
+            }
+        }
+    });
 }
 
+function createReservationItem(idx) {
+    var tableObj = $("<table class='reservationItem'><tr></tr></table>");
+
+    var tdLeftObj = $("<td></td>");
+    var datePicker = $("<input id='inputDate" + idx + "' class='editable' type='text' name='inputDate' style='width:7em;font-size:large' onclick='YahhoCal.render(this.id);' />"
+            + "<div id='calendar" + idx + "' ></div>");
+    tdLeftObj.append(datePicker);
+
+    var tdRightObj = $("<td></td>");
+    var facilityPicker = $("<select class='selector'></select>");
+    for (var facility in facilities) {
+        var facilityObj = $("<option></option>").text(facility);
+        facilityPicker.append(facilityObj);
+    }
+    tdRightObj.append(facilityPicker);
+    tdRightObj.append($("<table class='timeSlot'><tr></tr></table>"));
+    tableObj.append(tdLeftObj).append(tdRightObj);
+    facilityPicker.selectmenu({
+        width: 250,
+        change: function () {
+            var oldTimeSlots = $("td", $(this).parent());
+            $(oldTimeSlots).each(function () {
+                $(this).remove();
+            });
+            var selectedFacility;
+            $("option:selected", $(this)).each(function () {
+                selectedFacility = $(this).val();
+                return false;
+            });
+            var timeSlots = facilities[selectedFacility];
+            for (var i = 0; i < timeSlots.length; ++i) {
+                var timeSlotObj = $("<td><input type='checkbox' class='editable' value='" + timeSlots[i] + "' /> " + timeSlots[i] + "</td>");
+                $("tr", $(this).parent()).append(timeSlotObj);
+            }
+        }
+    });
+    return tableObj;
+}
+
+function updateReservationList() {
+    // TODO
+}
 
 function load() {
     var contents = $("iframe").contents();
