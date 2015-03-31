@@ -223,10 +223,10 @@ function selectDate(contents) {
     console.log("target : " + targetMonth + ", displaying : " + displayingMonth);
 
     if (targetMonth < displayingMonth) {
-        movePreviousMonth(contents);
+        moveToPreviousMonth(contents);
         return;
     } else if (targetMonth > displayingMonth) {
-        moveNextMonth(contents);
+        moveToNextMonth(contents);
         return;
     }
     var fmt = new DateFormat("yyyy, M, d");
@@ -246,11 +246,11 @@ function selectDate(contents) {
         return date.getMonth() + 1;
     }
 
-    function movePreviousMonth(contents) {
+    function moveToPreviousMonth(contents) {
         dispatchClick(contents, $("img[alt='前の月']", contents).parent());
     }
 
-    function moveNextMonth(contents) {
+    function moveToNextMonth(contents) {
         dispatchClick(contents, $("img[alt='次の月']", contents).parent());
     }
 }
