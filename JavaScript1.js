@@ -58,6 +58,7 @@ function init() {
     $("#start").button().click(function () {
         if (timerId) {
             clearTimeout(timerId);
+            timerId = null;
         }
         if (isStarted) {
             $(this).text("Start");
@@ -146,31 +147,31 @@ function load() {
     disableDialog(contents);
 
     if (0 < title.indexOf("認証画面")) {
-        setTimeout(login, getSleepTime(), contents);
+        timerId = setTimeout(login, getSleepTime(), contents);
     } else if (0 < title.indexOf("登録メニュー画面")) {
-        setTimeout(selectReservation, getSleepTime(), contents);
+        timerId = setTimeout(selectReservation, getSleepTime(), contents);
     } else if (0 < title.indexOf("予約申込画面")) {
-        setTimeout(selectPurpose, getSleepTime(), contents);
+        timerId = setTimeout(selectPurpose, getSleepTime(), contents);
     } else if (0 < title.indexOf("利用目的選択画面")) {
-        setTimeout(selectTennis, getSleepTime(), contents);
+        timerId = setTimeout(selectTennis, getSleepTime(), contents);
     } else if (0 < title.indexOf("館選択画面")) {
-        setTimeout(selectFacility, getSleepTime(), contents);
+        timerId = setTimeout(selectFacility, getSleepTime(), contents);
     } else if (0 < title.indexOf("施設空き状況１ヶ月表示画面")) {
-        setTimeout(selectDate, getSleepTime(), contents);
+        timerId = setTimeout(selectDate, getSleepTime(), contents);
     } else if (0 < title.indexOf("施設空き状況画面時間貸し")) {
         if ($("img[alt='選択中']", contents).length) {
-            setTimeout(doApply, getSleepTime(), contents);
+            timerId = setTimeout(doApply, getSleepTime(), contents);
         } else {
-            setTimeout(selectTimeSlot, getSleepTime(), contents);
+            timerId = setTimeout(selectTimeSlot, getSleepTime(), contents);
         }
     } else if (0 < title.indexOf("時間貸し利用開始時間選択画面")) {
-        setTimeout(selectStartTime, getSleepTime(), contents);
+        timerId = setTimeout(selectStartTime, getSleepTime(), contents);
     } else if (0 < title.indexOf("利用規約承認画面")) {
-        setTimeout(confirmTOS, getSleepTime(), contents);
+        timerId = setTimeout(confirmTOS, getSleepTime(), contents);
     } else if (0 < title.indexOf("予約内容一覧画面")) {
-        setTimeout(applyReservation, getSleepTime(), contents);
+        timerId = setTimeout(applyReservation, getSleepTime(), contents);
     } else if (0 < title.indexOf("施設予約一覧画面")) {
-        setTimeout(sendMail, getSleepTime(), contents);
+        timerId = setTimeout(sendMail, getSleepTime(), contents);
     }
 }
 
