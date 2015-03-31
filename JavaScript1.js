@@ -10,6 +10,7 @@ var timerId = null;
 var isStarted = false;
 
 var reservationList = [];
+var currentTargetIdx = null;
 //    [
 //    {
 //        date: "2015/2/26",
@@ -19,21 +20,29 @@ var reservationList = [];
 //    }
 //    ];
 
-
 function getTargetFaclity() {
-    return "法典公園（グラスポ）";
+    return (reservationList[currentTargetIdx] || {}).facility ;
 }
 
 function getTargetDate() {
-    return "2015/4/14";
+    return (reservationList[currentTargetIdx] || {}).date;
 }
 
 function getTargetTimeSlot() {
-    return "1230";
+    return (reservationList[currentTargetIdx] || {}).time;
 }
 
 function moveToNextTarget() {
-    // TODO
+    if (null === currentTargetIdx) {
+        currentTargetIdx = 0;
+    } else {
+        currentTargetIdx++;
+    }
+    if (currentTargetIdx <= reservationList.length - 1) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 
@@ -59,6 +68,7 @@ function init() {
             isStarted = false;
         } else {
             updateReservationList();
+            moveToNextTarget();
             if (getTargetFaclity()) {
                 $(this).text("Stop");
                 $(".editable").prop("disabled", true);
@@ -251,11 +261,14 @@ function selectTimeSlot(contents) {
         var hrefScriptString = a.attr("href");
         var startTime = Number(hrefScriptString.split(",")[5]);
         var endTime = Number(hrefScriptString.split(",")[7]);
-        if (startTime <= getTargetTimeSlot() && getTargetTimeSlot() < endTime) {
-            dispatchClick(contents, a);
-            return false;
-        } else {
-            console.log(getTargetTimeSlot() + " is not in [" + startTime + " - " + endTime + "]");
+        var targetTimes = getTargetTimeSlot();
+        for (var i = 0; i < targetTimes.length; ++i) {
+            if (startTime <= targetTimes[i] && targetTimes[i] < endTime) {
+                dispatchClick(contents, a);
+                return false;
+            } else {
+                console.log(targetTimes[i] + " is not in [" + startTime + " - " + endTime + "]");
+            }
         }
     });
     console.log("There is no time slot. " + getTargetDate() + " " + getTargetTimeSlot());
