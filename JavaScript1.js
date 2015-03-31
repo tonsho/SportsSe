@@ -38,8 +38,9 @@ function moveToNextTarget() {
 
 
 function init() {
+    var currendarId = 0;
     $("#addTimeSlot").button().click(function() {
-        $("#reservationList").append(createReservationItem($(".reservationItem").length));
+        $("#reservationList").append(createReservationItem(currendarId++));
     }).click();
     $("#removeTimeSlot").button().click(function () {
         $(".reservationItem:last").remove();
