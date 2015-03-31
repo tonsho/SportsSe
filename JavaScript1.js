@@ -75,12 +75,12 @@ function createReservationItem(idx) {
     var tableObj = $("<table class='reservationItem'><tr></tr></table>");
 
     var tdLeftObj = $("<td></td>");
-    var datePicker = $("<input id='inputDate" + idx + "' class='editable' type='text' name='inputDate' style='width:7em;font-size:large' onclick='YahhoCal.render(this.id);' />"
+    var datePicker = $("<input id='inputDate" + idx + "' class='editable inputDate' type='text' name='inputDate' style='width:7em;font-size:large' onclick='YahhoCal.render(this.id);' />"
             + "<div id='calendar" + idx + "' ></div>");
     tdLeftObj.append(datePicker);
 
     var tdRightObj = $("<td></td>");
-    var facilityPicker = $("<select class='selector'></select>");
+    var facilityPicker = $("<select class='selector inputFacility'></select>");
     for (var facility in facilities) {
         var facilityObj = $("<option></option>").text(facility);
         facilityPicker.append(facilityObj);
@@ -102,7 +102,7 @@ function createReservationItem(idx) {
             });
             var timeSlots = facilities[selectedFacility];
             for (var i = 0; i < timeSlots.length; ++i) {
-                var timeSlotObj = $("<td><input type='checkbox' class='editable' value='" + timeSlots[i] + "' /> " + timeSlots[i] + "</td>");
+                var timeSlotObj = $("<td><input type='checkbox' class='editable inputTime' value='" + timeSlots[i] + "' /> " + timeSlots[i] + "</td>");
                 $("tr", $(this).parent()).append(timeSlotObj);
             }
         }
@@ -111,7 +111,22 @@ function createReservationItem(idx) {
 }
 
 function updateReservationList() {
-    // TODO
+    reservationList = [];
+    currentTargetIdx = null;
+    $(".reservationItem").each(function () {
+        var facility = $(".inputFacility option:selected", $(this)).text();
+        var date = $(".inputDate", $(this)).val();
+        var time = $(".inputTime:checked", $(this)).map(function () {
+            return $(this).val();
+        }).get();
+        if (date && time.length) {
+            reservationList.push({
+                facility: facility,
+                date: date,
+                time: time
+            })
+        }
+    });
 }
 
 function load() {
