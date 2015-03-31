@@ -53,7 +53,6 @@ function init() {
     }).click();
     $("#removeTimeSlot").button().click(function () {
         $(".reservationItem:last").remove();
-        updateReservationList();
     });
     $("#start").button().click(function () {
         if (timerId) {
@@ -77,6 +76,7 @@ function init() {
                 $("#addTimeSlot").prop("disabled", true);
                 $("#removeTimeSlot").prop("disabled", true);
                 isStarted = true;
+                load();
             }
         }
     });
@@ -141,6 +141,11 @@ function updateReservationList() {
 }
 
 function load() {
+    if (!isStarted) {
+        console.log("Not started");
+        return;
+    }
+
     var contents = $("iframe").contents();
     var title = $("title", contents).text();
     console.log("読み込み完了 [" + title + "]");
