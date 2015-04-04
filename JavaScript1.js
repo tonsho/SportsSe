@@ -358,6 +358,13 @@ function moveToNextTargetAndBackToHomePage(contents) {
 }
 
 function backToHomePage(contents) {
+    var title = $("title", contents).text();
+    if (0 < title.indexOf("登録メニュー画面")) {
+        isContinueingBackToHomePage = false;
+        load();
+        return;
+    }
+
     var goToMenuButton = $("img[alt='メニューへ']", contents);
     if (goToMenuButton.length) {
         isContinueingBackToHomePage = false;
