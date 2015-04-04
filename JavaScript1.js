@@ -196,7 +196,7 @@ function load() {
             now = new Date();
         if (isInOutOfService(now)) {
             console.log("Out of service. " + now);
-            sleepTime = getTimeToServiceStart(now);
+            sleepTime = getTimeToStartService(now);
         }
         sleepTime += getSleepTime();
         timerId = setTimeout(backToHomePage, sleepTime, contents);
@@ -211,7 +211,7 @@ function load() {
         return (0 <= now.getHours() && now.getHours() < 6);
     }
 
-    function getTimeToServiceStart(now) {
+    function getTimeToStartService(now) {
         var currentTime = now.getTime();
         var wakeUpDate = now;
         if (6 <= now.getHours()) {
