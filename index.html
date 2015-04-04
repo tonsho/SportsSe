@@ -25,12 +25,45 @@
             </td>
             <td valign="top" class="ui-widget">
                 <h1>TypeScript HTML App</h1>
+                <div>
+                    <table style="text-align:left" cellpadding="5">
+                        <tr>
+                            <td>
+                                <label for="userId" style="width:10em">User ID</label>
+                            </td>
+                            <td>
+                                <input id="userId" type="text" style="font-size:large;width:10em" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label for="password" style="width:10em">Password</label>
+                            </td>
+                            <td>
+                                <input id="password" type="password" style="width:10em" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label for="numOfPlayers" style="width:10em">Number of players</label>
+                            </td>
+                            <td>
+                                <input id="numOfPlayers" type="number" style="width:10em" value="3"/>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <br />
+                <hr />
+                <label for="reservationList">Reservation Target</label>
                 <div id="reservationList"></div>
-                <button id="addTimeSlot" style="width:60px;height:40px;font-size:large">+</button>
-                <button id="removeTimeSlot" style="width:60px;height:40px;font-size:large">-</button>
+                <br />
+                <button id="addReservationItem" style="width:60px;height:40px;font-size:large">+</button>
+                <button id="removeReservationItem" style="width:60px;height:40px;font-size:large">-</button>
+                <br />
                 <hr />
                 <div style="text-align:center">
-                    <button id="start" style="width:100px;height:50px;font-size:large">Start</button>
+                    <button id="start" style="width:200px;height:60px;font-size:large">Start</button>
                 </div>
             </td>
         </tr>
