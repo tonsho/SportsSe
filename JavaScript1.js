@@ -6,6 +6,7 @@ var facilities = {
 
 var numOfPlayers = 3;
 
+var iframeUrl;
 var timerId = null;
 var isStarted = false;
 var isContinueingBackToHomePage = false;
@@ -48,6 +49,7 @@ function moveToNextTarget() {
 
 
 function init() {
+    iframeUrl = $("iframe").attr("src");
     var urlParams = getUrlVars();
     for (var key in urlParams) {
         $("#" + key).each(function () {
@@ -190,8 +192,26 @@ function load() {
     } else if (0 < title.indexOf("施設予約一覧画面")) {
         timerId = setTimeout(sendMail, getSleepTime(), contents);
     } else if (" " == title) {
-        var now = new Date();
-        console.log("Out of service. " + now);
+        var sleepTime = 0,
+            now = new Date();
+        if (isInOutOfService(now)) {
+            console.log("Out of service. " + now);
+            sleepTime = getTimeToServiceStart(now);
+        }
+        sleepTime += getSleepTime();
+        timerId = setTimeout(backToHomePage, sleepTime, contents);
+    } else {
+        console.log("Unknown page : " + title);
+        console.log("Return to initial url. " + iframeUrl);
+        var doc = contents[0];
+        doc.location.href = iframeUrl;
+    }
+
+    function isInOutOfService(now) {
+        return (0 <= now.getHours() && now.getHours() < 6);
+    }
+
+    function getTimeToServiceStart(now) {
         var currentTime = now.getTime();
         var wakeUpDate = now;
         if (6 <= now.getHours()) {
@@ -200,10 +220,9 @@ function load() {
         wakeUpDate.setHours(6);
         wakeUpDate.setMinutes(0);
         wakeUpDate.setSeconds(0);
-        var extraSleepTime = getSleepTime();
-        var sleepTime = wakeUpDate.getTime() - currentTime + extraSleepTime;
-        console.log("Sleep until " + wakeUpDate + " + " + extraSleepTime + "[ms] (" + sleepTime + "[ms])");
-        timerId = setTimeout(backToHomePage, sleepTime, contents);
+        var sleepTime = wakeUpDate.getTime() - currentTime;
+        console.log("Sleep until " + wakeUpDate + " (" + sleepTime + "[ms])");
+        return sleepTime;
     }
 }
 
