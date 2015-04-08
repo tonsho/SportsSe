@@ -56,9 +56,9 @@ function init() {
             $(this).val(urlParams[key]);
         });
     }
-    var currendarId = 0;
+    var calendarId = 0;
     $("#addReservationItem").button().click(function () {
-        $("#reservationList").append(createReservationItem(currendarId++));
+        $("#reservationList").append(createReservationItem(calendarId++));
     }).click().click().click();
     $("#removeReservationItem").button().click(function () {
         $(".reservationItem:last").remove();
