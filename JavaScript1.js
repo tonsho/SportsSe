@@ -5,6 +5,7 @@ var facilities = {
 };
 
 var numOfPlayers = 3;
+var retryIntervalInMin = 5;
 
 var iframeUrl;
 var timerId = null;
@@ -369,10 +370,10 @@ function moveToNextTargetAndBackToHomePage(contents) {
         timerId = setTimeout(backToHomePage, getSleepTime(), contents);
     } else {
         currentTargetIdx = 0;
-        var sleepTime = 10 * 1000;
+        var retryIntervalInMin = $("#retryInterval").val();
         console.log("There is no empty. " + JSON.stringify(reservationList));
-        console.log("Sleep " + sleepTime + "[ms]");
-        timerId = setTimeout(backToHomePage, sleepTime, contents);
+        console.log("Sleep " + retryIntervalInMin + "[min] (" + (new DateFormat("yyyy/MM/dd HH:mm:ss")).format(new Date()) + ")");
+        timerId = setTimeout(backToHomePage, retryIntervalInMin * 60 * 1000, contents);
     }
 }
 
