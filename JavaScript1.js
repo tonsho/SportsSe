@@ -70,27 +70,36 @@ function init() {
             timerId = null;
         }
         if (isStarted) {
-            $(this).text("Start");
-            $(".editable").prop("disabled", false);
-            $(".selector").selectmenu().selectmenu("enable");
-            $("#addReservationItem").prop("disabled", false);
-            $("#removeReservationItem").prop("disabled", false);
-            isStarted = false;
+            stopBrowsing();
         } else {
-            updateReservationList();
-            moveToNextTarget();
-            if (getTargetFaclity()) {
-                $(this).text("Stop");
-                $(".editable").prop("disabled", true);
-                $(".selector").selectmenu().selectmenu("disable");
-                $("#addReservationItem").prop("disabled", true);
-                $("#removeReservationItem").prop("disabled", true);
-                isStarted = true;
-                backToHomePage($("iframe").contents());
-            }
+            startBrowsing();
         }
     });
 }
+
+function startBrowsing() {
+    updateReservationList();
+    moveToNextTarget();
+    if (getTargetFaclity()) {
+        $("#start").text("Stop");
+        $(".editable").prop("disabled", true);
+        $(".selector").selectmenu().selectmenu("disable");
+        $("#addReservationItem").prop("disabled", true);
+        $("#removeReservationItem").prop("disabled", true);
+        isStarted = true;
+        backToHomePage($("iframe").contents());
+    }
+}
+
+function stopBrowsing() {
+    $("#start").text("Start");
+    $(".editable").prop("disabled", false);
+    $(".selector").selectmenu().selectmenu("enable");
+    $("#addReservationItem").prop("disabled", false);
+    $("#removeReservationItem").prop("disabled", false);
+    isStarted = false;
+}
+
 
 function createReservationItem(idx) {
     var tableObj = $("<table class='reservationItem'><tr></tr></table>");
@@ -363,6 +372,7 @@ function applyReservation(contents) {
 
 function sendMail(contents) {
     dispatchClick(contents, $("img[alt='送信する']", contents).parent());
+    stopBrowsing();
 }
 
 function moveToNextTargetAndBackToHomePage(contents) {
