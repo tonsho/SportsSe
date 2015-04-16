@@ -3,51 +3,129 @@ var facilities = {
     "法典公園（グラスポ）": ["830", "1030", "1230", "1430", "1630"],
     "運動公園": ["700", "900", "1100", "1300", "1500", "1700"]
 };
+var storageKeyInfo = "keyInfo";
+var storageKeyList = "keyList";
 
-var numOfPlayers = 3;
-var retryIntervalInMin = 5;
+function ReservationInfo() {
+    this.userId =  null;
+    this.password = null;
+    this.numOfPlayers =  null;
+    this.retryInterval = null;
+}
+
+ReservationInfo.prototype = {
+    update: function () {
+        for (var key in this) {
+            if (this.hasOwnProperty(key)) {
+                this[key] = $("#" + key).val();
+            }
+        }
+    },
+    show: function () {
+        for (var key in this) {
+            if (this.hasOwnProperty(key)) {
+                $("#" + key).val(this[key]);
+            }
+        }
+    },
+    loadFromStorage: function () {
+        var obj = JSON.parse(localStorage.getItem(storageKeyInfo));
+        for (var key in this) {
+            if (this.hasOwnProperty(key)) {
+                this[key] = obj[key];
+            }
+        }
+        this.show();
+    },
+    saveToStorage: function () {
+        this.update();
+        localStorage.setItem(storageKeyInfo, JSON.stringify(this));
+    }
+};
+
+var reservationInfo = new ReservationInfo();
+
+function ReservationTargetList() {
+    this.list = [];
+    this.currentIdx = null;
+    //    [
+    //    {
+    //        date: "2015/2/26",
+    //        facility: "法典公園（グラスポ）",
+    //        time: [
+    //                "1030", "1430"]
+    //    }
+    //    ];
+}
+
+ReservationTargetList.prototype = {
+    update: function () {
+        this.list = [];
+        this.currentIdx = 0;
+        var that = this;
+        $(".reservationItem").each(function () {
+            var facility = $(".inputFacility option:selected", $(this)).text();
+            var date = $(".inputDate", $(this)).val();
+            var time = $(".inputTime:checked", $(this)).map(function () {
+                return $(this).val();
+            }).get();
+            if (date && time.length) {
+                that.list.push({
+                    facility: facility,
+                    date: date,
+                    time: time
+                })
+            }
+        });
+    },
+    show: function () {
+        $(".reservationItem").remove();
+        for (var i = 0; i < this.list.length; ++i) {
+            $("#addReservationItem").button().click();
+            var item = $(".reservationItem:last");
+            $(".inputDate", item).val(this.list[i].date);
+            $(".inputFacility", item).selectmenu().val(this.list[i].facility).selectmenu("refresh", true);
+            displayTimeSlots.call($(".inputFacility", item));
+            $(".inputTime", item).val(this.list[i].time);
+        }
+    },
+    loadFromStorage: function () {
+        this.list = JSON.parse(localStorage.getItem(storageKeyList));
+        this.show();
+    },
+    saveToStorage: function () {
+        this.update();
+        localStorage.setItem(storageKeyList, JSON.stringify(this.list));
+    },
+    getCurrentTargetFaclity: function () {
+        return (this.list[this.currentIdx] || {}).facility;
+    },
+    getCurrentTargetDate: function () {
+        return (this.list[this.currentIdx] || {}).date;
+    },
+    getCurrentTargetTimeSlots: function () {
+        return (this.list[this.currentIdx] || {}).time;
+    },
+    moveToNextTarget: function () {
+        if (null === this.currentIdx) {
+            this.currentIdx = 0;
+        } else {
+            this.currentIdx++;
+        }
+        if (this.currentIdx <= this.list.length - 1) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+};
+
+var reservationTargetList = new ReservationTargetList();
 
 var iframeUrl;
 var timerId = null;
 var isStarted = false;
 var isContinueingBackToHomePage = false;
-
-var reservationList = [];
-var currentTargetIdx = null;
-//    [
-//    {
-//        date: "2015/2/26",
-//        facility: "法典公園（グラスポ）",
-//        time: [
-//                "1030", "1430"]
-//    }
-//    ];
-
-function getTargetFaclity() {
-    return (reservationList[currentTargetIdx] || {}).facility ;
-}
-
-function getTargetDate() {
-    return (reservationList[currentTargetIdx] || {}).date;
-}
-
-function getTargetTimeSlots() {
-    return (reservationList[currentTargetIdx] || {}).time;
-}
-
-function moveToNextTarget() {
-    if (null === currentTargetIdx) {
-        currentTargetIdx = 0;
-    } else {
-        currentTargetIdx++;
-    }
-    if (currentTargetIdx <= reservationList.length - 1) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
 
 function init() {
     iframeUrl = $("iframe").attr("src");
@@ -64,6 +142,14 @@ function init() {
     $("#removeReservationItem").button().click(function () {
         $(".reservationItem:last").remove();
     });
+    $("#save").button().click(function () {
+        reservationInfo.saveToStorage();
+        reservationTargetList.saveToStorage();
+    });
+    $("#load").button().click(function () {
+        reservationInfo.loadFromStorage();
+        reservationTargetList.loadFromStorage();
+    });
     $("#start").button().click(function () {
         if (timerId) {
             clearTimeout(timerId);
@@ -78,14 +164,13 @@ function init() {
 }
 
 function startBrowsing() {
-    updateReservationList();
-    moveToNextTarget();
-    if (getTargetFaclity()) {
+    reservationInfo.update();
+    reservationTargetList.update();
+    reservationTargetList.moveToNextTarget();
+    if (reservationTargetList.getCurrentTargetFaclity()) {
         $("#start").text("Stop");
         $(".editable").prop("disabled", true);
         $(".selector").selectmenu().selectmenu("disable");
-        $("#addReservationItem").prop("disabled", true);
-        $("#removeReservationItem").prop("disabled", true);
         isStarted = true;
         backToHomePage($("iframe").contents());
     }
@@ -95,8 +180,6 @@ function stopBrowsing() {
     $("#start").text("Start");
     $(".editable").prop("disabled", false);
     $(".selector").selectmenu().selectmenu("enable");
-    $("#addReservationItem").prop("disabled", false);
-    $("#removeReservationItem").prop("disabled", false);
     isStarted = false;
 }
 
@@ -120,43 +203,26 @@ function createReservationItem(idx) {
     tableObj.append(tdLeftObj).append(tdRightObj);
     facilityPicker.selectmenu({
         width: 250,
-        change: function () {
-            var oldTimeSlots = $("td", $(this).parent());
-            $(oldTimeSlots).each(function () {
-                $(this).remove();
-            });
-            var selectedFacility;
-            $("option:selected", $(this)).each(function () {
-                selectedFacility = $(this).val();
-                return false;
-            });
-            var timeSlots = facilities[selectedFacility];
-            for (var i = 0; i < timeSlots.length; ++i) {
-                var timeSlotObj = $("<td><input type='checkbox' class='editable inputTime' value='" + timeSlots[i] + "' /> " + timeSlots[i] + "</td>");
-                $("tr", $(this).parent()).append(timeSlotObj);
-            }
-        }
+        change: displayTimeSlots
     });
     return tableObj;
 }
 
-function updateReservationList() {
-    reservationList = [];
-    currentTargetIdx = null;
-    $(".reservationItem").each(function () {
-        var facility = $(".inputFacility option:selected", $(this)).text();
-        var date = $(".inputDate", $(this)).val();
-        var time = $(".inputTime:checked", $(this)).map(function () {
-            return $(this).val();
-        }).get();
-        if (date && time.length) {
-            reservationList.push({
-                facility: facility,
-                date: date,
-                time: time
-            })
-        }
+function displayTimeSlots() {
+    var oldTimeSlots = $("td", $(this).parent());
+    $(oldTimeSlots).each(function () {
+        $(this).remove();
     });
+    var selectedFacility;
+    $("option:selected", $(this)).each(function () {
+        selectedFacility = $(this).val();
+        return false;
+    });
+    var timeSlots = facilities[selectedFacility];
+    for (var i = 0; i < timeSlots.length; ++i) {
+        var timeSlotObj = $("<td><input type='checkbox' class='editable inputTime' value='" + timeSlots[i] + "' /> " + timeSlots[i] + "</td>");
+        $("tr", $(this).parent()).append(timeSlotObj);
+    }
 }
 
 function load() {
@@ -201,20 +267,18 @@ function load() {
         timerId = setTimeout(applyReservation, getSleepTime(), contents);
     } else if (0 < title.indexOf("施設予約一覧画面")) {
         timerId = setTimeout(sendMail, getSleepTime(), contents);
-    } else if (" " == title) {
-        var sleepTime = 0,
-            now = new Date();
+    } else {
+        var now = new Date();
         if (isInOutOfService(now)) {
             console.log("Out of service. " + now);
-            sleepTime = getTimeToStartService(now);
+            var sleepTime = getTimeToStartService(now) + getSleepTime();
+            timerId = setTimeout(backToHomePage, sleepTime, contents);
+        } else if (" " == title) {
+            timerId = setTimeout(backToHomePage, getSleepTime(), contents);
+        } else {
+            console.log("Return to initial url. " + iframeUrl);
+            timerId = setTimeout(returnToInitialUrl, getSleepTime(), contents);
         }
-        sleepTime += getSleepTime();
-        timerId = setTimeout(backToHomePage, sleepTime, contents);
-    } else {
-        console.log("Unknown page : " + title);
-        console.log("Return to initial url. " + iframeUrl);
-        var doc = contents[0];
-        doc.location.href = iframeUrl;
     }
 
     function isInOutOfService(now) {
@@ -233,6 +297,11 @@ function load() {
         var sleepTime = wakeUpDate.getTime() - currentTime;
         console.log("Sleep until " + wakeUpDate + " (" + sleepTime + "[ms])");
         return sleepTime;
+    }
+
+    function returnToInitialUrl(contents) {
+        var doc = contents[0];
+        doc.location.href = iframeUrl;
     }
 }
 
@@ -256,8 +325,8 @@ function getRandomInt(min, max) {
 }
 
 function login(contents) {
-    $("#userId", contents).val($("#userId").val());
-    $("#password", contents).val($("#password").val());
+    $("#userId", contents).val(reservationInfo.userId);
+    $("#password", contents).val(reservationInfo.password);
     dispatchClick(contents, $("img[alt='ログイン']", contents).parent());
 }
 
@@ -274,12 +343,12 @@ function selectTennis(contents) {
 }
 
 function selectFacility(contents) {
-    var facility = getTargetFaclity();
+    var facility = reservationTargetList.getCurrentTargetFaclity();
     dispatchClick(contents, $("a:contains('" + facility + "')", contents));
 }
 
 function selectDate(contents) {
-    var targetDate = new Date(getTargetDate());
+    var targetDate = new Date(reservationTargetList.getCurrentTargetDate());
     var displayingDate = getDisplayingDate(contents);
     console.log("target : " + (new DateFormat("yyyy/M")).format(targetDate) + ", displaying : " + (new DateFormat("yyyy/M")).format(displayingDate));
 
@@ -325,7 +394,7 @@ function selectTimeSlot(contents) {
         var hrefScriptString = a.attr("href");
         var startTime = Number(hrefScriptString.split(",")[5]);
         var endTime = Number(hrefScriptString.split(",")[7]);
-        var targetTimeSlots = getTargetTimeSlots();
+        var targetTimeSlots = reservationTargetList.getCurrentTargetTimeSlots();
         for (var i = 0; i < targetTimeSlots.length; ++i) {
             if (startTime <= targetTimeSlots[i] && targetTimeSlots[i] < endTime) {
                 isNotFound = false;
@@ -338,13 +407,13 @@ function selectTimeSlot(contents) {
     });
 
     if (isNotFound) {
-        console.log("There is no time slot. " + getTargetDate() + " " + JSON.stringify(getTargetTimeSlots()));
+        console.log("There is no time slot. " + reservationTargetList.getCurrentTargetDate() + " " + JSON.stringify(reservationTargetList.getCurrentTargetTimeSlots()));
         moveToNextTargetAndBackToHomePage(contents);
     }
 }
 
 function selectStartTime(contents) {
-    var targetTimeSlots = getTargetTimeSlots();
+    var targetTimeSlots = reservationTargetList.getCurrentTargetTimeSlots();
     for (var i = 0; i < targetTimeSlots.length; ++i) {
         var targetLink = $("a[href*='" + targetTimeSlots[i] + "']", contents);
         if (targetLink.length) {
@@ -352,7 +421,7 @@ function selectStartTime(contents) {
             return false;
         }
     }
-    console.log("There is no time slot. " + getTargetDate() + " " + JSON.stringify(getTargetTimeSlots()));
+    console.log("There is no time slot. " + reservationTargetList.getCurrentTargetDate() + " " + JSON.stringify(reservationTargetList.getCurrentTargetTimeSlots()));
     moveToNextTargetAndBackToHomePage(contents);
 }
 
@@ -366,7 +435,7 @@ function confirmTOS(contents) {
 }
 
 function applyReservation(contents) {
-    $("input[name='applyNum']", contents).val($("#numOfPlayers").val());
+    $("input[name='applyNum']", contents).val(reservationInfo.numOfPlayers);
     dispatchClick(contents, $("img[alt='申込み']", contents).parent());
 }
 
@@ -376,12 +445,12 @@ function sendMail(contents) {
 }
 
 function moveToNextTargetAndBackToHomePage(contents) {
-    if (moveToNextTarget()) {
+    if (reservationTargetList.moveToNextTarget()) {
         timerId = setTimeout(backToHomePage, getSleepTime(), contents);
     } else {
-        currentTargetIdx = 0;
-        var retryIntervalInMin = $("#retryInterval").val();
-        console.log("There is no empty. " + JSON.stringify(reservationList));
+        reservationTargetList.currentIdx = 0;
+        var retryIntervalInMin = reservationInfo.retryInterval;
+        console.log("There is no empty. " + JSON.stringify(reservationTargetList.list));
         console.log("Sleep " + retryIntervalInMin + "[min] (" + (new DateFormat("yyyy/MM/dd HH:mm:ss")).format(new Date()) + ")");
         timerId = setTimeout(backToHomePage, retryIntervalInMin * 60 * 1000, contents);
     }
