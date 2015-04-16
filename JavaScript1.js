@@ -1,10 +1,16 @@
 var facilities = {
-    "----- Select -----": [],
     "法典公園（グラスポ）": ["830", "1030", "1230", "1430", "1630"],
     "運動公園": ["700", "900", "1100", "1300", "1500", "1700"]
 };
-var storageKeyInfo = "keyInfo";
-var storageKeyList = "keyList";
+
+function getDefaultFacility() {
+    for (var facility in facilities) {
+        return facility;
+    }
+}
+
+var storageKeyInfo = "keyInfo",
+    storageKeyList = "keyList";
 
 function ReservationInfo() {
     this.userId =  null;
@@ -204,7 +210,8 @@ function createReservationItem(idx) {
     facilityPicker.selectmenu({
         width: 250,
         change: displayTimeSlots
-    });
+    }).val(getDefaultFacility()).selectmenu("refresh", true);
+    displayTimeSlots.call(facilityPicker);
     return tableObj;
 }
 
