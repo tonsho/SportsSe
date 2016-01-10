@@ -1,3 +1,9 @@
+var defaultCheckedTime = ["1030", "1230", "1430"];
+var defaultDate = new Date();
+defaultDate.setDate(1);
+defaultDate.setMonth(defaultDate.getMonth() + 1);
+var defaultDateString = (new DateFormat("yyyy/MM/dd")).format(defaultDate);
+
 var facilities = {
     "法典公園（グラスポ）": ["830", "1030", "1230", "1430", "1630"],
     "運動公園": ["700", "900", "1100", "1300", "1500", "1700"]
@@ -67,7 +73,7 @@ function ReservationTargetList() {
 ReservationTargetList.prototype = {
     update: function () {
         this.list = [];
-        this.currentIdx = 0;
+        this.currentIdx = null;
         var that = this;
         $(".reservationItem").each(function () {
             var facility = $(".inputFacility option:selected", $(this)).text();
@@ -196,6 +202,7 @@ function createReservationItem(idx) {
     var tdLeftObj = $("<td></td>");
     var datePicker = $("<input id='inputDate" + idx + "' class='editable inputDate' type='text' name='inputDate' style='width:7em;font-size:large;text-align:center' onclick='YahhoCal.render(this.id);' />"
             + "<div id='calendar" + idx + "' ></div>");
+    $(datePicker[0]).val(defaultDateString);
     tdLeftObj.append(datePicker);
 
     var tdRightObj = $("<td></td>");
@@ -227,7 +234,11 @@ function displayTimeSlots() {
     });
     var timeSlots = facilities[selectedFacility];
     for (var i = 0; i < timeSlots.length; ++i) {
-        var timeSlotObj = $("<td><input type='checkbox' class='editable inputTime' value='" + timeSlots[i] + "' /> " + timeSlots[i] + "</td>");
+        var checked = null;
+        if (0 <= defaultCheckedTime.indexOf(timeSlots[i])) {
+            checked = " checked='checked' ";
+        }
+        var timeSlotObj = $("<td><input type='checkbox' class='editable inputTime' " + checked + " value='" + timeSlots[i] + "' /> " + timeSlots[i] + "</td>");
         $("tr", $(this).parent()).append(timeSlotObj);
     }
 }
@@ -370,7 +381,7 @@ function selectDate(contents) {
     }
 
     var fmt = new DateFormat("yyyy, M, d");
-    var targetDateLink = $("a[href*='" + fmt.format(targetDate) + "']", contents);
+    var targetDateLink = $("a[href*='" + fmt.format(targetDate) + ")']", contents);
     if (targetDateLink.length) {
         dispatchClick(contents, targetDateLink);
     } else {
