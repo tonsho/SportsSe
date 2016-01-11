@@ -259,6 +259,12 @@ function load() {
         return;
     }
 
+    if ((new Date()).getDate() < 10 && $("#waitForStartNextMonthResavation").prop('checked')) {
+        var sleepTime = getTimeToStartNextMonthResavation() + getSleepTime();
+        timerId = setTimeout(backToHomePage, sleepTime, contents);
+        return;
+    }
+
     if (0 < title.indexOf("認証画面")) {
         timerId = setTimeout(login, getSleepTime(), contents);
     } else if (0 < title.indexOf("登録メニュー画面")) {
@@ -297,6 +303,22 @@ function load() {
             console.log("Return to initial url. " + iframeUrl);
             timerId = setTimeout(returnToInitialUrl, getSleepTime(), contents);
         }
+    }
+
+    function getTimeToStartNextMonthResavation() {
+        var now = new Date();
+        var wakeUpDate = new Date();
+        wakeUpDate.setDate(10);
+        wakeUpDate.setHours(6);
+        wakeUpDate.setMinutes(0);
+        wakeUpDate.setSeconds(0);
+
+        if (wakeUpDate < now) {
+            wakeUpDate.setMonth(now.getMonth() + 1);
+        }
+        var sleepTime = Math.min(wakeUpDate.getTime() - now.getTime(), 24 * 60 * 60 * 1000); // Max 1 day
+        console.log("Sleep until " + wakeUpDate + " (" + sleepTime + "[ms])");
+        return sleepTime;
     }
 
     function isInOutOfService(now) {
