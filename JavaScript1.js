@@ -1,4 +1,4 @@
-var defaultCheckedTime = ["1030", "1230", "1430"];
+var defaultCheckedTime = ["1030", "1230"];
 var defaultDate = new Date();
 defaultDate.setDate(1);
 defaultDate.setMonth(defaultDate.getMonth() + 1);
