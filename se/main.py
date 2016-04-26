@@ -176,10 +176,12 @@ def select_time_slot(brw, rsv_list, state):
 def select_start_time(brw, rsv_list, state):
     targets = rsv_list.get_current_time_slots()
     for target in targets:
-        rsv_link = brw.find_element_by_xpath('//a[contains(@href,"{}")]'.format(target))
-        if rsv_link:
+        try:
+            rsv_link = brw.find_element_by_xpath('//a[contains(@href,"{}")]'.format(target))
             rsv_link.click()
             return
+        except NoSuchElementException:
+            pass
 
     log.debug('There is no time slot. ' + str(targets))
     move_to_next_rsv_and_back_to_home_page(brw, rsv_list, state)
