@@ -12,10 +12,6 @@ import datetime
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
-ID = os.getenv('ID')
-PW = os.getenv('PW')
-num_of_players = 3
-retry_interval_in_min = 3
 
 class ReservationTargetList(object):
     def __init__(self, rsv_list):
@@ -50,17 +46,17 @@ class ReservationTargetList(object):
         return str(self.rsv_list)
 
 
-def start(rsv_list):
+def start(rsv_info, rsv_list):
     brw = webdriver.Chrome()
     brw.get('https://funayoyaku.city.funabashi.chiba.jp/web/')
 
     rsv_list = ReservationTargetList(rsv_list)
 
-    loop(brw, rsv_list)
+    loop(brw, rsv_info, rsv_list)
 
 
-def loop(brw, rsv_list):
-    state = {'is_backing_to_home_page': False}
+def loop(brw, rsv_info, rsv_list):
+    state = {'rsv_info': rsv_info, 'is_backing_to_home_page': False}
     while True:
         time.sleep(get_sleep_sec())
         title = brw.title
@@ -72,7 +68,7 @@ def loop(brw, rsv_list):
             continue
 
         if title.find(u'認証画面') > 0:
-            login(brw)
+            login(brw, rsv_info)
         elif title.find(u'登録メニュー画面') > 0:
             click(brw, '//a[img[@alt="予約の申込み"]]')
         elif title.find(u'予約申込画面') > 0:
@@ -91,7 +87,7 @@ def loop(brw, rsv_list):
             click(brw, '//input[@id="ruleFg_1"]')
             click(brw, '//a[img[@alt="確認"]]')
         elif title.find(u'予約内容一覧画面') > 0:
-            do_apply(brw)
+            do_apply(brw, rsv_info['num_of_players'])
         elif title.find(u'施設予約一覧画面') > 0:
             click(brw, '//a[img[@alt="送信する"]]')
             break
@@ -111,11 +107,11 @@ def get_sleep_sec():
     return random.randint(500, 3000) / 1000.0
 
 
-def login(brw):
+def login(brw, rsv_info):
     id = brw.find_element_by_id('userId')
-    id.send_keys(ID)
+    id.send_keys(rsv_info['id'])
     pw = brw.find_element_by_id('password')
-    pw.send_keys(PW)
+    pw.send_keys(rsv_info['password'])
     click(brw, '//a[img[@alt="ログイン"]]')
 
 
@@ -189,7 +185,7 @@ def select_start_time(brw, rsv_list, state):
     move_to_next_rsv_and_back_to_home_page(brw, rsv_list, state)
 
 
-def do_apply(brw):
+def do_apply(brw, num_of_players):
     apply_num =  brw.find_element_by_name('applyNum')
     apply_num.send_keys(num_of_players)
     click(brw, '//a[img[@alt="申込み"]]')
@@ -201,8 +197,8 @@ def move_to_next_rsv_and_back_to_home_page(brw, rsv_list, state):
 
     else:
         log.info('There is no empty. ' + str(rsv_list))
-        log.info('Sleep ' + str(retry_interval_in_min) + '[min]')
-        time.sleep(retry_interval_in_min * 60)
+        log.info('Sleep ' + str(state['rsv_info']['retry_interval_in_min']) + '[min]')
+        time.sleep(state['rsv_info']['retry_interval_in_min'] * 60)
         rsv_list.reset()
         back_to_home_page(brw, state)
 
@@ -248,8 +244,14 @@ if __name__ == '__main__':
     import argparse
     import json
     parser = argparse.ArgumentParser()
+    parser.add_argument('rsv_info', type=argparse.FileType('r'),
+                        help='Reservation information file')
     parser.add_argument('rsv_list', type=argparse.FileType('r'),
                         help='Reservation target list file')
     args = parser.parse_args()
-    rsv = json.load(args.rsv_list)
-    start(rsv)
+
+    rsv_info = json.load(args.rsv_info)
+    rsv_info['num_of_players'] = rsv_info.get('retry_interval_in_min') or 3
+    rsv_info['retry_interval_in_min'] = rsv_info.get('retry_interval_in_min') or 3
+    rsv_list = json.load(args.rsv_list)
+    start(rsv_info, rsv_list)
