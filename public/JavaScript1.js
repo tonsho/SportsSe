@@ -75,6 +75,7 @@ ReservationTargetList.prototype = {
     },
     saveToStorage: function () {
         this.update();
+        saveBlob(JSON.stringify(this.list), "rsv_list.json")
         localStorage.setItem(storageKeyList, JSON.stringify(this.list));
     },
     getCurrentTargetFaclity: function () {
@@ -183,4 +184,25 @@ function getUrlVars() {
         vars[hash[0]] = hash[1];
     }
     return vars;
+}
+
+function saveBlob(content, name) {
+    // これだと「ダウンロード」というファイル名で保存される。。。
+    // location.href = 'data:application/octet-stream,' + encodeURIComponent(content);
+
+    // 指定されたデータを保持するBlobを作成する。
+    var blob = new Blob([content], {"type": "application/octet-stream"});
+    // var blob = new Blob([content], {"type": "application/json"});    // ブラウザで開いてしまう
+    // var blob = new Blob([content]);                                  // ブラウザで開いてしまう
+
+    var url = window.URL || window.webkitURL;
+    downloadBlob(url.createObjectURL(blob), name);
+}
+
+function downloadBlob(url, name) {
+    var a = document.createElement('a');
+    a.href = url;
+    a.setAttribute('download', name || 'noname');
+    a.dispatchEvent(new CustomEvent('click'));
+    document.removeChild(a)
 }
