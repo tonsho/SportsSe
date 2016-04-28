@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, WebDriverException
 import logging
 import time
 import random
 import os
 import dateutil.parser
 import datetime
+import urllib
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -47,7 +48,10 @@ class ReservationTargetList(object):
 
 
 def start(rsv_info, rsv_list):
-    brw = webdriver.Chrome()
+    try:
+        brw = webdriver.Chrome()
+    except WebDriverException:
+        brw = webdriver.Firefox()
     brw.get('https://funayoyaku.city.funabashi.chiba.jp/web/')
 
     rsv_list = ReservationTargetList(rsv_list)
@@ -158,7 +162,7 @@ def select_time_slot(brw, rsv_list, state):
 
     vacancies = brw.find_elements_by_xpath('//a[img[@alt="空き"]]')
     for a in vacancies:
-        href_script = a.get_attribute('href')
+        href_script = urllib.unquote(a.get_attribute('href'))
         start = int(href_script.split(',')[5])
         end = int(href_script.split(',')[7])
         targets = rsv_list.get_current_time_slots()
