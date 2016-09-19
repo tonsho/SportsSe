@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException, WebDriverException
-import logging
-import time
-import random
-import os
-import dateutil.parser
 import datetime
+import logging
+import random
+import time
 import urllib
+
+import dateutil.parser
+from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
