@@ -48,13 +48,29 @@ class ReservationTargetList(object):
 
 
 def start(rsv_info, rsv_list):
+    # Check target date
+    rsv_list = ReservationTargetList(rsv_list)
+
+    today = datetime.date.fromtimestamp(time.time())
+    target_date = rsv_list.get_current_date()
+    if today > rsv_list.get_current_date():
+        log.error('{} has already been passed.')
+        return
+
+    reservation_start_date = datetime.date.fromtimestamp(time.mktime((target_date.year, target_date.month - 1, 10, 0,0,0,0,0,0)))
+    if today <= reservation_start_date:
+        reservation_start = time.mktime(datetime.datetime(reservation_start_date.year, reservation_start_date.month, reservation_start_date.day, 6).timetuple())
+        now = time.time()
+        if now < reservation_start:
+            log.info('Sleep until {} ({}[sec])'.format(datetime.datetime.fromtimestamp(reservation_start), reservation_start - now))
+            time.sleep(reservation_start - now)
+
     try:
         brw = webdriver.Chrome()
     except WebDriverException:
         brw = webdriver.Firefox()
     brw.get('https://funayoyaku.city.funabashi.chiba.jp/web/')
 
-    rsv_list = ReservationTargetList(rsv_list)
 
     loop(brw, rsv_info, rsv_list)
 
