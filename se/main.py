@@ -76,8 +76,12 @@ def start(rsv_info, rsv_list):
 
 
 def loop(brw, rsv_info, rsv_list):
+    retry_minutes = rsv_info.get('retry_minutes', 30)
+    end_time = time.time() + retry_minutes * 60
+    log.info('Retry until {}'.format(datetime.datetime.fromtimestamp(end_time)))
+
     state = {'rsv_info': rsv_info, 'is_backing_to_home_page': False}
-    while True:
+    while time.time() < end_time:
         time.sleep(get_sleep_sec())
         title = brw.title
         log.debug(title)
@@ -111,6 +115,8 @@ def loop(brw, rsv_info, rsv_list):
         elif title.find(u'施設予約一覧画面') > 0:
             click(brw, '//a[img[@alt="送信する"]]')
             break
+
+    log.info('Retry finished')
 
 
 def disable_dialog(brw):
