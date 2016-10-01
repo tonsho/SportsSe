@@ -65,10 +65,8 @@ def start(rsv_info, rsv_list):
             log.info('Sleep until {} ({}[sec])'.format(datetime.datetime.fromtimestamp(reservation_start), reservation_start - now))
             time.sleep(reservation_start - now)
 
-    try:
-        brw = webdriver.Chrome()
-    except WebDriverException:
-        brw = webdriver.Firefox()
+    user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36'
+    brw = webdriver.PhantomJS(desired_capabilities={'phantomjs.page.settings.userAgent':user_agent})
     brw.get('https://funayoyaku.city.funabashi.chiba.jp/web/')
 
 
