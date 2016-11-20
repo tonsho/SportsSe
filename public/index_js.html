@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>TypeScript HTML App</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.3/themes/smoothness/jquery-ui.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.3/jquery-ui.min.js"></script>
+    <script src="yahho-calendar.js"></script>
+    <script src="gcalendar-holidays.js"></script>
+    <script type="text/javascript">
+        YahhoCal.loadYUI();
+    </script>
+    <script src="dateformat.js"></script>
+    <script src="JavaScript1.js"></script>
+</head>
+<body onload="init()">
+    <table>
+        <tr>
+            <td valign="top" class="ui-widget">
+                <h1>TypeScript HTML App</h1>
+                <button id="addReservationItem" class="editable" style="width:60px;height:40px;font-size:large">+</button>
+                <button id="removeReservationItem" class="editable" style="width:60px;height:40px;font-size:large">-</button>
+                <button id="save" style="width:120px;height:40px;font-size:large">Save</button>
+                <button id="load" class="editable" style="width:120px;height:40px;font-size:large">Load</button>
+                <br />
+                <label for="reservationList">Reservation Target</label>
+                <div id="reservationList"></div>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
