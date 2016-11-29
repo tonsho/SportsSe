@@ -47,7 +47,6 @@ export class AppComponent {
             }
         }
         console.log(JSON.stringify(jsonArray));
-        alert(JSON.stringify(jsonArray, null, 2));
         localStorage.setItem(STORAGE_KEY_LIST, JSON.stringify(jsonArray));
         this.serialized = jsonArray;
     }
