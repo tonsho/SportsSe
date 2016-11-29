@@ -1,7 +1,6 @@
 import { Component, Input } from '@angular/core';
 
 @Component({
-    moduleId: module.id,
     selector: 'reservation-target',
     template: `
       <table class="reservationItem">

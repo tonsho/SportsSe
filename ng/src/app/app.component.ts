@@ -4,7 +4,6 @@ import { ReservationTarget } from './reservation-target.component';
 
 @Component({
     selector: 'my-app',
-    moduleId: module.id,
     template: `
       <table>
           <tr>
