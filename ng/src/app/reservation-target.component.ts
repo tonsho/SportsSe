@@ -23,7 +23,7 @@ import { Component, Input } from '@angular/core';
           </tr></table>
         </td>
       </table>
-      {{this | json}}
+      {{this.target | json}}
     `
 })
 export class ReservationTagetComponent {
