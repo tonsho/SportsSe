@@ -61,6 +61,8 @@ export class AppComponent {
         console.log("load")
         this.targetList = [];
         let jsonArray = JSON.parse(localStorage.getItem(STORAGE_KEY_LIST));
+        console.log(JSON.stringify(jsonArray));
+        this.serialized = jsonArray;
         for (let serialized of jsonArray) {
             this.targetList.push(ReservationTarget.deserialize(serialized));
         }
