@@ -70,7 +70,7 @@ export class ReservationTarget {
         ret.date = serialized.date;
         ret.changeFacility(serialized.facility);
         for (let s of ret.facility.slots) {
-            s.v = (0 < serialized.time.indexOf(s.t));
+            s.v = (0 <= serialized.time.indexOf(s.t));
         }
         return ret;
     }
