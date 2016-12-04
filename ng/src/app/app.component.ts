@@ -9,24 +9,30 @@ import { ReservationTarget } from './reservation-target.component';
           <tr>
               <td valign="top" class="ui-widget">
                   <h1>{{title}}</h1>
-                  <button class="btn btn-primary" (click)="add()">+</button>
-                  <button class="btn btn-primary" (click)="save()">Save</button>
-                  <button class="btn btn-primary" (click)="load()">Load</button>
+                  <button md-mini-fab (click)="add()">
+                    <md-icon class="md-24">add</md-icon>
+                  </button>
+                  <button md-raised-button color="primary" (click)="save()">SAVE</button>
+                  <button md-raised-button color="primary" (click)="load()">LOAD</button>
                   <br />
-                  <table>
-                  <tr *ngFor="let t of targetList">
-                    <td>
+                  <md-card *ngFor="let t of targetList" style="margin:5px;">
+                    <md-card-content>
                       <reservation-target [target]="t"></reservation-target>
-                    </td><td>
-                      <button class="btn btn-danger" (click)="delete(t); $event.stopPropagation()">x</button>
-                    </td>
-                  </tr>
-                  </table>
+                    </md-card-content>
+                    <md-card-actions>
+                      <button md-raised-button color="warn" (click)="delete(t); $event.stopPropagation()">DELETE</button>
+                    </md-card-actions>
+                  </md-card>
               </td>
           </tr>
       </table>
-      <div class="alert alert-success">{{serialized | json}}</div>
+      <div>{{serialized | json}}</div>
     `,
+    styles: [`
+      div {
+        font-family: Avenir , "Open Sans" , "Helvetica Neue" , Helvetica , Arial , Verdana , Roboto , "游ゴシック" , "Yu Gothic" , "游ゴシック体" , "YuGothic" , "ヒラギノ角ゴ Pro W3" , "Hiragino Kaku Gothic Pro" , "Meiryo UI" , "メイリオ" , Meiryo , "ＭＳ Ｐゴシック" , "MS PGothic" , sans-serif;
+      }
+  `]
 })
 export class AppComponent {
     title = 'Reservation Target';

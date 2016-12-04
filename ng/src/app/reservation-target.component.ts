@@ -13,18 +13,24 @@ import { Component, Input } from '@angular/core';
           <select class="" (change)="onChangeFacility($event.target.value)">
             <option *ngFor="let f of facilities" [selected]="target.facility.name == f.name" >{{f.name}}</option>
           </select>
-          <div>
-          </div>
           <table><tr>
             <td *ngFor="let s of target.facility.slots">
-              <input type="checkbox" class="editable" value="{{s.t}}" [checked]="s.v" (change)="s.v=$event.target.checked">
-              <label>{{s.t}}</label>
+              <md-checkbox [checked]="s.v" (change)="s.v = $event.checked">
+                <label>{{s.t}}</label>
+              </md-checkbox>
             </td>
           </tr></table>
         </td>
       </table>
-      {{this.target | json}}
-    `
+    `,
+    styles: [`
+      select {
+        font-family: Avenir , "Open Sans" , "Helvetica Neue" , Helvetica , Arial , Verdana , Roboto , "游ゴシック" , "Yu Gothic" , "游ゴシック体" , "YuGothic" , "ヒラギノ角ゴ Pro W3" , "Hiragino Kaku Gothic Pro" , "Meiryo UI" , "メイリオ" , Meiryo , "ＭＳ Ｐゴシック" , "MS PGothic" , sans-serif;
+      }
+      label {
+        font-family: Avenir , "Open Sans" , "Helvetica Neue" , Helvetica , Arial , Verdana , Roboto , "游ゴシック" , "Yu Gothic" , "游ゴシック体" , "YuGothic" , "ヒラギノ角ゴ Pro W3" , "Hiragino Kaku Gothic Pro" , "Meiryo UI" , "メイリオ" , Meiryo , "ＭＳ Ｐゴシック" , "MS PGothic" , sans-serif;
+      }
+  `]
 })
 export class ReservationTagetComponent {
     @Input() target: ReservationTarget;
@@ -78,7 +84,7 @@ export class ReservationTarget {
 
 export class Facility {
     name: string;
-    slots: { t: string, v: boolean }[];
+    slots: { t: string, v: any }[];
 }
 
 export class SerializedReservationTarget {
