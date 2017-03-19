@@ -57,7 +57,7 @@ def start(rsv_info, rsv_list):
         log.error('{} has already been passed.')
         return
 
-    reservation_start_date = datetime.date.fromtimestamp(time.mktime((target_date.year, target_date.month - 1, 10, 0,0,0,0,0,0)))
+    reservation_start_date = datetime.date.fromtimestamp(time.mktime((target_date.year, target_date.month - 1, 10, 0, 0, 0, 0, 0, 0)))
     if today <= reservation_start_date:
         reservation_start = time.mktime(datetime.datetime(reservation_start_date.year, reservation_start_date.month, reservation_start_date.day, 6).timetuple())
         now = time.time()
@@ -68,7 +68,6 @@ def start(rsv_info, rsv_list):
     user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36'
     brw = webdriver.PhantomJS(desired_capabilities={'phantomjs.page.settings.userAgent':user_agent})
     brw.get('https://funayoyaku.city.funabashi.chiba.jp/web/')
-
 
     loop(brw, rsv_info, rsv_list)
 
@@ -160,8 +159,8 @@ def select_date(brw, rsv_list, state):
 
     try:
         rsv_link = brw.find_element_by_xpath('//a[contains(@href,"{}, {}, {})")]'.format(
-                                             rsv_date.year, rsv_date.month, rsv_date.day
-                                             ))
+            rsv_date.year, rsv_date.month, rsv_date.day
+        ))
         rsv_link.click()
     except NoSuchElementException:
         log.info('There is no space. ' + str(rsv_date))
@@ -212,7 +211,7 @@ def select_start_time(brw, rsv_list, state):
 
 
 def do_apply(brw, num_of_players):
-    apply_num =  brw.find_element_by_name('applyNum')
+    apply_num = brw.find_element_by_name('applyNum')
     apply_num.send_keys(num_of_players)
     click(brw, '//a[img[@alt="申込み"]]')
 
@@ -269,6 +268,7 @@ def click(brw, xpath):
 if __name__ == '__main__':
     import argparse
     import json
+
     parser = argparse.ArgumentParser()
     parser.add_argument('rsv_info', type=argparse.FileType('r'),
                         help='Reservation information file')
@@ -277,7 +277,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     rsv_info = json.load(args.rsv_info)
-    rsv_info['num_of_players'] = rsv_info.get('retry_interval_in_min') or 3
-    rsv_info['retry_interval_in_min'] = rsv_info.get('retry_interval_in_min') or 3
+    rsv_info['num_of_players'] = rsv_info.get('retry_interval_in_min', 3)
+    rsv_info['retry_interval_in_min'] = rsv_info.get('retry_interval_in_min', 3)
     rsv_list = json.load(args.rsv_list)
     start(rsv_info, rsv_list)
