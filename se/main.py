@@ -17,16 +17,23 @@ logging.basicConfig(level=logging.DEBUG)
 class ReservationTargetList(object):
     def __init__(self, rsv_list):
         self.current_idx = 0
-        self.rsv_list = rsv_list
+        self.target = rsv_list.get('target')
+        self.preferred = rsv_list.get('preferred', [])
 
     def get_current_facility(self):
-        return self.rsv_list[self.current_idx]['facility']
+        return self.target[self.current_idx]['facility']
+
+    def get_preferred_list(self):
+        facility = self.get_current_facility()
+        for p in self.preferred:
+            if p['facility'] == facility:
+                return p['place']
 
     def get_current_date(self):
-        return dateutil.parser.parse(self.rsv_list[self.current_idx]['date']).date()
+        return dateutil.parser.parse(self.target[self.current_idx]['date']).date()
 
     def get_current_time_slots(self):
-        return self.rsv_list[self.current_idx]['time']
+        return self.target[self.current_idx]['time']
 
     def move_to_next(self):
         if self.current_idx is None:
@@ -34,7 +41,7 @@ class ReservationTargetList(object):
             return True
         else:
             self.current_idx += 1
-            if self.current_idx >= len(self.rsv_list):
+            if self.current_idx >= len(self.target):
                 self.current_idx = None
                 return False
             else:
@@ -44,7 +51,7 @@ class ReservationTargetList(object):
         self.current_idx = 0
 
     def __str__(self):
-        return str(self.rsv_list)
+        return str(self.target)
 
 
 def start(rsv_info, rsv_list):
@@ -180,6 +187,7 @@ def select_time_slot(brw, rsv_list, state):
         return
 
     vacancies = brw.find_elements_by_xpath('//a[img[@alt="空き"]]')
+    vacancies = sort_by_preferred(vacancies, rsv_list.get_preferred_list())
     for a in vacancies:
         href_script = urllib.unquote(a.get_attribute('href'))
         start = int(href_script.split(',')[5])
@@ -194,6 +202,27 @@ def select_time_slot(brw, rsv_list, state):
 
     log.debug('There is no time slot. ' + str(targets))
     move_to_next_rsv_and_back_to_home_page(brw, rsv_list, state)
+
+
+def sort_by_preferred(vacancies, preferred_list, preferred_only=False):
+    if preferred_list is None:
+        return vacancies
+
+    ret = []
+    for preferred in preferred_list:
+        for a in vacancies:
+            pp = a.find_element_by_xpath('../..')
+            if pp.text == preferred:
+                ret.append(a)
+    if preferred_only:
+        return ret
+
+    # preferredではない残り
+    for a in vacancies:
+        if a not in ret:
+            ret.append(a)
+
+    return ret
 
 
 def select_start_time(brw, rsv_list, state):
