@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import json
 import logging
 import random
 import time
@@ -12,7 +13,7 @@ from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 
 log = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 
 class ReservationTargetList(object):
@@ -57,7 +58,7 @@ class ReservationTargetList(object):
         self.current_idx = None
 
     def __str__(self):
-        return str(self.target)
+        return json.dumps(self.target)
 
 
 def start(rsv_info, rsv_list):
@@ -97,7 +98,7 @@ def loop(brw, rsv_info, rsv_list):
     while time.time() < end_time:
         time.sleep(get_sleep_sec())
         title = brw.title
-        log.debug(title)
+        log.info(title)
         disable_dialog(brw)
 
         if state['is_backing_to_home_page']:
@@ -162,7 +163,7 @@ def select_facility(brw, rsv_list):
 def select_date(brw, rsv_list, state):
     rsv_date = rsv_list.get_current_date()
     disp_date = get_displaying_month(brw)
-    log.debug('reserve: ' + rsv_date.strftime('%Y/%m') + ', displaying: ' + disp_date.strftime('%Y/%m'))
+    log.info('reserve: ' + rsv_date.strftime('%Y/%m') + ', displaying: ' + disp_date.strftime('%Y/%m'))
 
     rsv_month = rsv_date.year * 12 + rsv_date.month
     disp_month = disp_date.year * 12 + disp_date.month
@@ -185,7 +186,7 @@ def select_date(brw, rsv_list, state):
 
 def get_displaying_month(brw):
     displaying_ele = brw.find_element_by_xpath('//strong[contains(./text(),"年") and contains(./text(),"月")]')
-    log.debug("displaying : " + displaying_ele.text)
+    log.info("displaying : " + displaying_ele.text)
     displaying_datetime = datetime.strptime(displaying_ele.text.encode('utf-8'), '%Y年%m月')
     return displaying_datetime.date()
 
@@ -207,9 +208,9 @@ def select_time_slot(brw, rsv_list, state):
                 a.click()
                 return
             else:
-                log.debug(target + ' is not in [' + str(start) + ' - ' + str(end) + ']')
+                log.info(target + ' is not in [' + str(start) + ' - ' + str(end) + ']')
 
-    log.debug('There is no time slot. ' + str(targets))
+    log.info('There is no time slot. ' + str(targets))
     move_to_next_rsv_and_back_to_home_page(brw, rsv_list, state)
 
 
@@ -244,7 +245,7 @@ def select_start_time(brw, rsv_list, state):
         except NoSuchElementException:
             pass
 
-    log.debug('There is no time slot. ' + str(targets))
+    log.info('There is no time slot. ' + str(targets))
     move_to_next_rsv_and_back_to_home_page(brw, rsv_list, state)
 
 
@@ -306,7 +307,6 @@ def click(brw, xpath):
 
 if __name__ == '__main__':
     import argparse
-    import json
 
     parser = argparse.ArgumentParser()
     parser.add_argument('rsv_info', type=argparse.FileType('r'),
