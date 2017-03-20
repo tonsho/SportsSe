@@ -18,9 +18,19 @@ logging.basicConfig(level=logging.INFO)
 
 class ReservationTargetList(object):
     def __init__(self, rsv_list):
-        self.current_idx = None
-        self.target = rsv_list.get('target')
+        self.current_idx = 0
+        self.target = self._trim_current_target(rsv_list.get('target'))
         self.preferred = rsv_list.get('preferred', [])
+
+    def _trim_current_target(self, target):
+        cancel_limit = datetime.now().date() + timedelta(days=3)
+        reservable_limit = datetime.fromtimestamp(time.mktime((datetime.now().year, datetime.now().month + 1 + 1, 1 - 1, 0, 0, 0, 0, 0, 0))).date()
+        current_target = []
+        for t in target:
+            target_date = dateutil.parser.parse(t['date']).date()
+            if cancel_limit < target_date <= reservable_limit:
+                current_target.append(t)
+        return current_target
 
     def get_current_facility(self):
         return self.target[self.current_idx]['facility']
@@ -40,22 +50,17 @@ class ReservationTargetList(object):
     def move_to_next(self):
         if self.current_idx is None:
             self.current_idx = 0
+            return True
         else:
             self.current_idx += 1
-
-        cancel_limit = datetime.now().date() + timedelta(days=3)
-        reservable_limit = datetime.fromtimestamp(time.mktime((datetime.now().year, datetime.now().month + 1 + 1, 1 - 1, 0, 0, 0, 0, 0, 0))).date()
-        while self.current_idx < len(self.target):
-            next_date = self.get_current_date()
-            if cancel_limit < next_date <= reservable_limit:
+            if self.current_idx >= len(self.target):
+                self.current_idx = None
+                return False
+            else:
                 return True
-            self.current_idx += 1
-
-        self.current_idx = None
-        return False
 
     def reset(self):
-        self.current_idx = None
+        self.current_idx = 0
 
     def __str__(self):
         return json.dumps(self.target)
@@ -64,16 +69,9 @@ class ReservationTargetList(object):
 def start(rsv_info, rsv_list):
     # Check target date
     rsv_list = ReservationTargetList(rsv_list)
-    if rsv_list.move_to_next() is False:
-        log.error('No target')
-        return
 
     today = datetime.now().date()
     target_date = rsv_list.get_current_date()
-    if today > rsv_list.get_current_date():
-        log.error('{} has already been passed.'.format(target_date.isoformat()))
-        return
-
     reservation_start_date = datetime.fromtimestamp(time.mktime((target_date.year, target_date.month - 1, 10, 0, 0, 0, 0, 0, 0))).date()
     if today <= reservation_start_date:
         reservation_start = time.mktime(datetime(reservation_start_date.year, reservation_start_date.month, reservation_start_date.day, 6).timetuple())
@@ -264,7 +262,6 @@ def move_to_next_rsv_and_back_to_home_page(brw, rsv_list, state):
         log.info('Sleep ' + str(state['rsv_info']['retry_interval_in_min']) + '[min]')
         time.sleep(state['rsv_info']['retry_interval_in_min'] * 60)
         rsv_list.reset()
-        rsv_list.move_to_next()
         back_to_home_page(brw, state)
 
 
