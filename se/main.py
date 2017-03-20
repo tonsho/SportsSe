@@ -24,7 +24,7 @@ class ReservationTargetList(object):
 
     def _trim_current_target(self, target):
         cancel_limit = datetime.now().date() + timedelta(days=3)
-        reservable_limit = datetime.fromtimestamp(time.mktime((datetime.now().year, datetime.now().month + 1 + 1, 1 - 1, 0, 0, 0, 0, 0, 0))).date()
+        reservable_limit = make_datetime(datetime.now().year, datetime.now().month + 1 + 1, 0).date()
         current_target = []
         for t in target:
             target_date = dateutil.parser.parse(t['date']).date()
@@ -66,15 +66,19 @@ class ReservationTargetList(object):
         return json.dumps(self.target)
 
 
+def make_datetime(year, month, day, hour=0, min=0, sec=0):
+    return datetime.fromtimestamp(time.mktime((year, month, day, hour, min, sec, 0, 0, 0)))
+
+
 def start(rsv_info, rsv_list):
     # Check target date
     rsv_list = ReservationTargetList(rsv_list)
 
     today = datetime.now().date()
     target_date = rsv_list.get_current_date()
-    reservation_start_date = datetime.fromtimestamp(time.mktime((target_date.year, target_date.month - 1, 10, 0, 0, 0, 0, 0, 0))).date()
+    reservation_start_date = make_datetime(target_date.year, target_date.month - 1, 10).date()
     if today <= reservation_start_date:
-        reservation_start = time.mktime(datetime(reservation_start_date.year, reservation_start_date.month, reservation_start_date.day, 6).timetuple())
+        reservation_start = time.mktime(make_datetime(reservation_start_date.year, reservation_start_date.month, reservation_start_date.day, 6).timetuple())
         now = time.time()
         if now < reservation_start:
             log.info('Sleep until {} ({}[sec])'.format(datetime.fromtimestamp(reservation_start), reservation_start - now))
