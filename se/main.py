@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import datetime
 import logging
 import random
 import time
 import urllib
+from datetime import datetime
 
 import dateutil.parser
 from selenium import webdriver
@@ -58,18 +58,18 @@ def start(rsv_info, rsv_list):
     # Check target date
     rsv_list = ReservationTargetList(rsv_list)
 
-    today = datetime.date.fromtimestamp(time.time())
+    today = datetime.now().date()
     target_date = rsv_list.get_current_date()
     if today > rsv_list.get_current_date():
-        log.error('{} has already been passed.')
+        log.error('{} has already been passed.'.format(target_date.isoformat()))
         return
 
-    reservation_start_date = datetime.date.fromtimestamp(time.mktime((target_date.year, target_date.month - 1, 10, 0, 0, 0, 0, 0, 0)))
+    reservation_start_date = datetime.fromtimestamp(time.mktime((target_date.year, target_date.month - 1, 10, 0, 0, 0, 0, 0, 0))).date()
     if today <= reservation_start_date:
-        reservation_start = time.mktime(datetime.datetime(reservation_start_date.year, reservation_start_date.month, reservation_start_date.day, 6).timetuple())
+        reservation_start = time.mktime(datetime(reservation_start_date.year, reservation_start_date.month, reservation_start_date.day, 6).timetuple())
         now = time.time()
         if now < reservation_start:
-            log.info('Sleep until {} ({}[sec])'.format(datetime.datetime.fromtimestamp(reservation_start), reservation_start - now))
+            log.info('Sleep until {} ({}[sec])'.format(datetime.fromtimestamp(reservation_start), reservation_start - now))
             time.sleep(reservation_start - now)
 
     user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36'
@@ -82,7 +82,7 @@ def start(rsv_info, rsv_list):
 def loop(brw, rsv_info, rsv_list):
     retry_minutes = rsv_info.get('retry_minutes', 30)
     end_time = time.time() + retry_minutes * 60
-    log.info('Retry until {}'.format(datetime.datetime.fromtimestamp(end_time)))
+    log.info('Retry until {}'.format(datetime.fromtimestamp(end_time)))
 
     state = {'rsv_info': rsv_info, 'is_backing_to_home_page': False}
     while time.time() < end_time:
@@ -177,7 +177,7 @@ def select_date(brw, rsv_list, state):
 def get_displaying_month(brw):
     displaying_ele = brw.find_element_by_xpath('//strong[contains(./text(),"年") and contains(./text(),"月")]')
     log.debug("displaying : " + displaying_ele.text)
-    displaying_datetime = datetime.datetime.strptime(displaying_ele.text.encode('utf-8'), '%Y年%m月')
+    displaying_datetime = datetime.strptime(displaying_ele.text.encode('utf-8'), '%Y年%m月')
     return displaying_datetime.date()
 
 
