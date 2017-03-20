@@ -5,6 +5,7 @@ import random
 import time
 import urllib
 from datetime import datetime
+from datetime import timedelta
 
 import dateutil.parser
 from selenium import webdriver
@@ -16,7 +17,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 class ReservationTargetList(object):
     def __init__(self, rsv_list):
-        self.current_idx = 0
+        self.current_idx = None
         self.target = rsv_list.get('target')
         self.preferred = rsv_list.get('preferred', [])
 
@@ -38,17 +39,22 @@ class ReservationTargetList(object):
     def move_to_next(self):
         if self.current_idx is None:
             self.current_idx = 0
-            return True
         else:
             self.current_idx += 1
-            if self.current_idx >= len(self.target):
-                self.current_idx = None
-                return False
-            else:
+
+        cancel_limit = datetime.now().date() + timedelta(days=3)
+        reservable_limit = datetime.fromtimestamp(time.mktime((datetime.now().year, datetime.now().month + 1 + 1, 1 - 1, 0, 0, 0, 0, 0, 0))).date()
+        while self.current_idx < len(self.target):
+            next_date = self.get_current_date()
+            if cancel_limit < next_date <= reservable_limit:
                 return True
+            self.current_idx += 1
+
+        self.current_idx = None
+        return False
 
     def reset(self):
-        self.current_idx = 0
+        self.current_idx = None
 
     def __str__(self):
         return str(self.target)
@@ -57,6 +63,9 @@ class ReservationTargetList(object):
 def start(rsv_info, rsv_list):
     # Check target date
     rsv_list = ReservationTargetList(rsv_list)
+    if rsv_list.move_to_next() is False:
+        log.error('No target')
+        return
 
     today = datetime.now().date()
     target_date = rsv_list.get_current_date()
@@ -254,6 +263,7 @@ def move_to_next_rsv_and_back_to_home_page(brw, rsv_list, state):
         log.info('Sleep ' + str(state['rsv_info']['retry_interval_in_min']) + '[min]')
         time.sleep(state['rsv_info']['retry_interval_in_min'] * 60)
         rsv_list.reset()
+        rsv_list.move_to_next()
         back_to_home_page(brw, state)
 
 
