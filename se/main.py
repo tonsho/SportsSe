@@ -13,7 +13,7 @@ from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 
 log = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 
 class ReservationTargetList(object):
