@@ -2,16 +2,22 @@
 
 import json
 import logging
+import os
 import random
 import time
 import urllib
 import urllib.parse
+import urllib.request
 from datetime import datetime
 from datetime import timedelta
 
 import dateutil.parser
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
+
+DEFAULT_RETRY_MINUTES = 30
+DEFAULT_NUM_OF_PLAYERS = 3
+DEFAULT_RETRY_INTERVAL_IN_MIN = 3
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -313,14 +319,47 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('rsv_info', type=argparse.FileType('r', encoding='utf-8'),
-                        help='Reservation information file')
-    parser.add_argument('rsv_list', type=argparse.FileType('r', encoding='utf-8'),
+    parser.add_argument('--config', type=argparse.FileType('r', encoding='utf-8'),
+                        help='Reservation config file')
+    parser.add_argument('--target', type=argparse.FileType('r', encoding='utf-8'),
                         help='Reservation target list file')
     args = parser.parse_args()
 
-    rsv_info = json.load(args.rsv_info)
-    rsv_info['num_of_players'] = rsv_info.get('num_of_players', 3)
-    rsv_info['retry_interval_in_min'] = rsv_info.get('retry_interval_in_min', 3)
-    rsv_list = json.load(args.rsv_list)
-    start(rsv_info, rsv_list)
+    # config
+    config = {}
+    required_keys = {'user_id', 'password', 'site_url'}
+    if args.config:
+        config = json.load(args.config)
+    if 'USER_ID' in os.environ:
+        config['user_id'] = os.environ['USER_ID']
+    if 'PASSWORD' in os.environ:
+        config['password'] = os.environ['PASSWORD']
+    if 'SITE_URL' in os.environ:
+        config['site_url'] = os.environ['SITE_URL']
+    if not set(config.keys()).issuperset(required_keys):
+        log.error('Missing required parameters. ' + str(required_keys - set(config.keys())))
+        exit(-1)
+
+    if 'NUM_OF_PLAYERS' in os.environ:
+        config['num_of_players'] = int(os.environ['NUM_OF_PLAYERS'])
+    else:
+        config['num_of_players'] = config.get('num_of_players', DEFAULT_NUM_OF_PLAYERS)
+    if 'RETRY_MINUTES' in os.environ:
+        config['retry_minutes'] = int(os.environ['RETRY_MINUTES'])
+    else:
+        config['retry_minutes'] = config.get('retry_minutes', DEFAULT_RETRY_MINUTES)
+    if 'RETRY_INTERVAL_IN_MIN' in os.environ:
+        config['retry_interval_in_min'] = int(os.environ['RETRY_INTERVAL_IN_MIN'])
+    else:
+        config['retry_interval_in_min'] = config.get('retry_interval_in_min', DEFAULT_RETRY_INTERVAL_IN_MIN)
+
+    # target_info
+    target_info = {}
+    if args.target:
+        target_info = json.load(args.target)
+    if 'TARGET_INFO_URL' in os.environ:
+        req = urllib.request.Request(os.environ['TARGET_INFO_URL'])
+        with urllib.request.urlopen(req) as res:
+            target_info = json.load(res)
+
+    start(config, target_info)
