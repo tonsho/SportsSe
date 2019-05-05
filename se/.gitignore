@@ -1,3 +1,4 @@
 *.json
 *.log
 log_*.txt
+.ipynb_checkpoints/
