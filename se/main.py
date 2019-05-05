@@ -5,6 +5,7 @@ import logging
 import random
 import time
 import urllib
+import urllib.parse
 from datetime import datetime
 from datetime import timedelta
 
@@ -202,7 +203,7 @@ def select_time_slot(brw, rsv_list, state):
     vacancies = brw.find_elements_by_xpath('//a[img[@alt="空き"]]')
     vacancies = sort_by_preferred(vacancies, rsv_list.get_preferred_list())
     for a in vacancies:
-        href_script = urllib.unquote(a.get_attribute('href'))
+        href_script = urllib.parse.unquote(a.get_attribute('href'))
         start = int(href_script.split(',')[5])
         end = int(href_script.split(',')[7])
         targets = rsv_list.get_current_time_slots()
