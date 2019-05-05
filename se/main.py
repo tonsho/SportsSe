@@ -23,7 +23,8 @@ class ReservationTargetList(object):
         self.target = self._trim_current_target(rsv_list.get('target'))
         self.preferred = rsv_list.get('preferred', [])
 
-    def _trim_current_target(self, target):
+    @staticmethod
+    def _trim_current_target(target):
         cancel_limit = datetime.now().date() + timedelta(days=3)
         reservable_limit = make_datetime(datetime.now().year, datetime.now().month + 1 + 1, 0).date()
         current_target = []
