@@ -71,7 +71,7 @@ class ReservationTargetList(object):
         self.current_idx = 0
 
     def __str__(self):
-        return json.dumps(self.target)
+        return json.dumps(self.target, ensure_ascii=False)
 
 
 def make_datetime(year, month, day, hour=0, minute=0, sec=0):
@@ -219,7 +219,7 @@ def select_time_slot(brw, rsv_list, state):
                 a.click()
                 return
             else:
-                log.info(slot + ' is not in [' + str(start_slot) + ' - ' + str(end_slot) + ']')
+                log.debug(slot + ' is not in [' + str(start_slot) + ' - ' + str(end_slot) + ']')
 
     log.info('There is no time slot. ' + str(target_slots))
     move_to_next_rsv_and_back_to_home_page(brw, rsv_list, state)
