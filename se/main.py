@@ -317,7 +317,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     rsv_info = json.load(args.rsv_info)
-    rsv_info['num_of_players'] = rsv_info.get('retry_interval_in_min', 3)
+    rsv_info['num_of_players'] = rsv_info.get('num_of_players', 3)
     rsv_info['retry_interval_in_min'] = rsv_info.get('retry_interval_in_min', 3)
     rsv_list = json.load(args.rsv_list)
     start(rsv_info, rsv_list)
