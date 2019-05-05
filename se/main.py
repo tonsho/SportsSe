@@ -24,10 +24,10 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 
 
 class ReservationTargetList(object):
-    def __init__(self, rsv_list):
+    def __init__(self, info):
         self.current_idx = 0
-        self.target = self._trim_current_target(rsv_list.get('target'))
-        self.preferred = rsv_list.get('preferred', [])
+        self.target = self._trim_current_target(info.get('target'))
+        self.preferred = info.get('preferred', [])
 
     @staticmethod
     def _trim_current_target(target):
@@ -74,38 +74,38 @@ class ReservationTargetList(object):
         return json.dumps(self.target)
 
 
-def make_datetime(year, month, day, hour=0, min=0, sec=0):
-    return datetime.fromtimestamp(time.mktime((year, month, day, hour, min, sec, 0, 0, 0)))
+def make_datetime(year, month, day, hour=0, minute=0, sec=0):
+    return datetime.fromtimestamp(time.mktime((year, month, day, hour, minute, sec, 0, 0, 0)))
 
 
-def start(rsv_info, rsv_list):
+def start(conf, target_inf):
     # Check target date
-    rsv_list = ReservationTargetList(rsv_list)
+    rsv_list = ReservationTargetList(target_inf)
 
     today = datetime.now().date()
     target_date = rsv_list.get_current_date()
-    reservation_start_date = make_datetime(target_date.year, target_date.month - 1, 10).date()
-    if today <= reservation_start_date:
-        reservation_start = time.mktime(make_datetime(reservation_start_date.year, reservation_start_date.month, reservation_start_date.day, 6).timetuple())
+    start_date = make_datetime(target_date.year, target_date.month - 1, 10).date()
+    if today <= start_date:
+        start_time = time.mktime(make_datetime(start_date.year, start_date.month, start_date.day, 6).timetuple())
         now = time.time()
-        if now < reservation_start:
-            log.info('Sleep until {} ({}[sec])'.format(datetime.fromtimestamp(reservation_start), reservation_start - now))
-            time.sleep(reservation_start - now)
+        if now < start_time:
+            log.info('Sleep until {} ({}[sec])'.format(datetime.fromtimestamp(start_time), start_time - now))
+            time.sleep(start_time - now)
 
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')
     brw = webdriver.Chrome(options=options)
-    brw.get('https://funayoyaku.city.funabashi.chiba.jp/web/')
+    brw.get(conf['site_url'])
 
-    loop(brw, rsv_info, rsv_list)
+    loop(brw, conf, rsv_list)
 
 
-def loop(brw, rsv_info, rsv_list):
-    retry_minutes = rsv_info.get('retry_minutes', 30)
+def loop(brw, conf, rsv_list):
+    retry_minutes = conf['retry_minutes']
     end_time = time.time() + retry_minutes * 60
     log.info('Retry until {}'.format(datetime.fromtimestamp(end_time)))
 
-    state = {'rsv_info': rsv_info, 'is_backing_to_home_page': False}
+    state = {'conf': conf, 'is_backing_to_home_page': False}
     while time.time() < end_time:
         time.sleep(get_sleep_sec())
         title = brw.title
@@ -117,7 +117,7 @@ def loop(brw, rsv_info, rsv_list):
             continue
 
         if title.find('認証画面') > 0:
-            login(brw, rsv_info)
+            login(brw, conf)
         elif title.find('登録メニュー画面') > 0:
             click(brw, '//a[img[@alt="予約の申込み"]]')
         elif title.find('予約申込画面') > 0:
@@ -136,7 +136,7 @@ def loop(brw, rsv_info, rsv_list):
             click(brw, '//input[@id="ruleFg_1"]')
             click(brw, '//a[img[@alt="確認"]]')
         elif title.find('予約内容一覧画面') > 0:
-            do_apply(brw, rsv_info['num_of_players'])
+            do_apply(brw, conf['num_of_players'])
         elif title.find('施設予約一覧画面') > 0:
             click(brw, '//a[img[@alt="送信する"]]')
             break
@@ -158,11 +158,11 @@ def get_sleep_sec():
     return random.randint(500, 3000) / 1000.0
 
 
-def login(brw, rsv_info):
-    id = brw.find_element_by_id('userId')
-    id.send_keys(rsv_info['id'])
+def login(brw, conf):
+    user_id = brw.find_element_by_id('userId')
+    user_id.send_keys(conf['user_id'])
     pw = brw.find_element_by_id('password')
-    pw.send_keys(rsv_info['password'])
+    pw.send_keys(conf['password'])
     click(brw, '//a[img[@alt="ログイン"]]')
 
 
@@ -209,19 +209,19 @@ def select_time_slot(brw, rsv_list, state):
 
     vacancies = brw.find_elements_by_xpath('//a[img[@alt="空き"]]')
     vacancies = sort_by_preferred(vacancies, rsv_list.get_preferred_list())
+    target_slots = rsv_list.get_current_time_slots()
     for a in vacancies:
         href_script = urllib.parse.unquote(a.get_attribute('href'))
-        start = int(href_script.split(',')[5])
-        end = int(href_script.split(',')[7])
-        targets = rsv_list.get_current_time_slots()
-        for target in targets:
-            if start <= int(target) < end:
+        start_slot = int(href_script.split(',')[5])
+        end_slot = int(href_script.split(',')[7])
+        for slot in target_slots:
+            if start_slot <= int(slot) < end_slot:
                 a.click()
                 return
             else:
-                log.info(target + ' is not in [' + str(start) + ' - ' + str(end) + ']')
+                log.info(slot + ' is not in [' + str(start_slot) + ' - ' + str(end_slot) + ']')
 
-    log.info('There is no time slot. ' + str(targets))
+    log.info('There is no time slot. ' + str(target_slots))
     move_to_next_rsv_and_back_to_home_page(brw, rsv_list, state)
 
 
@@ -272,8 +272,8 @@ def move_to_next_rsv_and_back_to_home_page(brw, rsv_list, state):
 
     else:
         log.info('There is no empty. ' + str(rsv_list))
-        log.info('Sleep ' + str(state['rsv_info']['retry_interval_in_min']) + '[min]')
-        time.sleep(state['rsv_info']['retry_interval_in_min'] * 60)
+        log.info('Sleep ' + str(state['conf']['retry_interval_in_min']) + '[min]')
+        time.sleep(state['conf']['retry_interval_in_min'] * 60)
         rsv_list.reset()
         back_to_home_page(brw, state)
 
