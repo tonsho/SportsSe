@@ -107,28 +107,28 @@ def loop(brw, rsv_info, rsv_list):
             back_to_home_page(brw, state)
             continue
 
-        if title.find(u'認証画面') > 0:
+        if title.find('認証画面') > 0:
             login(brw, rsv_info)
-        elif title.find(u'登録メニュー画面') > 0:
+        elif title.find('登録メニュー画面') > 0:
             click(brw, '//a[img[@alt="予約の申込み"]]')
-        elif title.find(u'予約申込画面') > 0:
+        elif title.find('予約申込画面') > 0:
             click(brw, '//a[img[@alt="利用目的から"]]')
-        elif title.find(u'利用目的選択画面') > 0:
+        elif title.find('利用目的選択画面') > 0:
             click(brw, '//a[contains(./text(),"テニス")]')
-        elif title.find(u'館選択画面') > 0:
+        elif title.find('館選択画面') > 0:
             select_facility(brw, rsv_list)
-        elif title.find(u'施設空き状況１ヶ月表示画面') > 0:
+        elif title.find('施設空き状況１ヶ月表示画面') > 0:
             select_date(brw, rsv_list, state)
-        elif title.find(u'施設空き状況画面時間貸し') > 0:
+        elif title.find('施設空き状況画面時間貸し') > 0:
             select_time_slot(brw, rsv_list, state)
-        elif title.find(u'時間貸し利用開始時間選択画面') > 0:
+        elif title.find('時間貸し利用開始時間選択画面') > 0:
             select_start_time(brw, rsv_list, state)
-        elif title.find(u'利用規約承認画面') > 0:
+        elif title.find('利用規約承認画面') > 0:
             click(brw, '//input[@id="ruleFg_1"]')
             click(brw, '//a[img[@alt="確認"]]')
-        elif title.find(u'予約内容一覧画面') > 0:
+        elif title.find('予約内容一覧画面') > 0:
             do_apply(brw, rsv_info['num_of_players'])
-        elif title.find(u'施設予約一覧画面') > 0:
+        elif title.find('施設予約一覧画面') > 0:
             click(brw, '//a[img[@alt="送信する"]]')
             break
 
@@ -189,7 +189,7 @@ def select_date(brw, rsv_list, state):
 def get_displaying_month(brw):
     displaying_ele = brw.find_element_by_xpath('//strong[contains(./text(),"年") and contains(./text(),"月")]')
     log.info("displaying : " + displaying_ele.text)
-    displaying_datetime = datetime.strptime(displaying_ele.text.encode('utf-8'), '%Y年%m月')
+    displaying_datetime = datetime.strptime(displaying_ele.text, '%Y年%m月')
     return displaying_datetime.date()
 
 
@@ -271,7 +271,7 @@ def move_to_next_rsv_and_back_to_home_page(brw, rsv_list, state):
 
 def back_to_home_page(brw, state):
     title = brw.title
-    if title.find(u"登録メニュー画面") > 0:
+    if title.find('登録メニュー画面') > 0:
         state['is_backing_to_home_page'] = False
         return
 
@@ -310,9 +310,9 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('rsv_info', type=argparse.FileType('r'),
+    parser.add_argument('rsv_info', type=argparse.FileType('r', encoding='utf-8'),
                         help='Reservation information file')
-    parser.add_argument('rsv_list', type=argparse.FileType('r'),
+    parser.add_argument('rsv_list', type=argparse.FileType('r', encoding='utf-8'),
                         help='Reservation target list file')
     args = parser.parse_args()
 
