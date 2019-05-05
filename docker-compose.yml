@@ -1,0 +1,11 @@
+version: "3"
+services:
+  se:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    environment:
+      - USER_ID
+      - PASSWORD
+      - SITE_URL
+      - TARGET_INFO_URL
