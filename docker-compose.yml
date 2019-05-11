@@ -4,6 +4,11 @@ services:
     build:
       context: .
       dockerfile: ./docker/Dockerfile
+    logging:
+      driver: syslog
+      options:
+        syslog-facility: user
+        tag: se
     environment:
       - USER_ID
       - PASSWORD
