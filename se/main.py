@@ -10,6 +10,7 @@ import urllib.parse
 import urllib.request
 from datetime import datetime
 from datetime import timedelta
+from logging import config
 
 import dateutil.parser
 from selenium import webdriver
@@ -19,8 +20,12 @@ DEFAULT_RETRY_MINUTES = 30
 DEFAULT_NUM_OF_PLAYERS = 3
 DEFAULT_RETRY_INTERVAL_IN_MIN = 3
 
+if 'LOGGING_CONF_FILE' in os.environ:
+    logging.config.fileConfig(os.environ['LOGGING_CONF_FILE'])
+else:
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
 log = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 
 class ReservationTargetList(object):

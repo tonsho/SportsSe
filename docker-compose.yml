@@ -5,6 +5,7 @@ services:
       context: .
       dockerfile: ./docker/Dockerfile
     environment:
+      - LOGGING_CONF_FILE
       - USER_ID
       - PASSWORD
       - SITE_URL
